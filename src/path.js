@@ -1,44 +1,50 @@
-export const drawPath =(startX, startY, endX, endY, offset = 10, orientation = 'vertical') => {
-  var deltaX = (Math.max(startX, endX) - Math.min(startX, endX)) * 0.15;
-  var deltaY = (Math.max(startY, endY) - Math.min(startY, endY)) * 0.15;
-  // For further calculations whichever is the shortest distance.
-  var delta = Math.min(deltaY, deltaX);
-  // Set sweep-flag (counter/clockwise)
-  var arc1 = 0; var arc2 = 1;
-
-  if (orientation == "vertical") {
-    var sigY = Math.sign(endY - startY);
-    // If start element is closer to the top edge,
-    // draw the first arc counter-clockwise, and the second one clockwise.
-    if (startY < endY) {
-      arc1 = 1;
-      arc2 = 0;
-    }
-    // Draw the pipe-like path
-    // 1. move a bit right, 2. arch, 3. move a bit down, 4.arch, 5. move right to the end
-    return ("M" + startX + " " + startY +
-      " H" + (startX + offset + delta) +
-      " A" + delta + " " + delta + " 0 0 " + arc1 + " " + (startX + offset + 2 * delta) + " " + (startY + delta * sigY) +
-      " V" + (endY - delta * sigY) +
-      " A" + delta + " " + delta + " 0 0 " + arc2 + " " + (startX + offset + 3 * delta) + " " + endY +
-      " H" + endX);
-  } else {
-    //Horizontal
-    var sigX = Math.sign(endX - startX);
-    // If start element is closer to the left edge,
-    // draw the first arc counter-clockwise, and the second one clockwise.
-    if (startX > endX) {
-      arc1 = 1;
-      arc2 = 0;
-    }
-    // Draw the pipe-like path
-    // 1. move a bit down, 2. arch, 3. move a bit to the right, 4.arch, 5. move down to the end
-    return("M" + startX + " " + startY +
-      " V" + (startY + offset + delta) +
-      " A" + delta + " " + delta + " 0 0 " + arc1 + " " + (startX + delta * sigX) + " " + (startY + offset + 2 * delta) +
-      " H" + (endX - delta * sigX) +
-      " A" + delta + " " + delta + " 0 0 " + arc2 + " " + endX + " " + (startY + offset + 3 * delta) +
-      " V" + endY);
+export const drawPath =(startX, startY, endX, endY) => {
+  const bb1 = {x: startX,
+    y: startY,
+    x: startX,
+    width: 0,
+    height: 0
   }
-
+  const bb2 = {x: startX,
+    y: endY,
+    x: endX,
+    width: 0,
+    height: 0
+  }
+       const p = [{x: bb1.x + bb1.width / 2, y: bb1.y - 1},
+        {x: bb1.x + bb1.width / 2, y: bb1.y + bb1.height + 1},
+        {x: bb1.x - 1, y: bb1.y + bb1.height / 2},
+        {x: bb1.x + bb1.width + 1, y: bb1.y + bb1.height / 2},
+        {x: bb2.x + bb2.width / 2, y: bb2.y - 1},
+        {x: bb2.x + bb2.width / 2, y: bb2.y + bb2.height + 1},
+        {x: bb2.x - 1, y: bb2.y + bb2.height / 2},
+        {x: bb2.x + bb2.width + 1, y: bb2.y + bb2.height / 2}],
+        d = {}, dis = [];
+    for (var i = 0; i < 4; i++) {
+        for (var j = 4; j < 8; j++) {
+            var dx = Math.abs(p[i].x - p[j].x),
+                dy = Math.abs(p[i].y - p[j].y);
+            if ((i == j - 4) || (((i != 3 && j != 6) || p[i].x < p[j].x) && ((i != 2 && j != 7) || p[i].x > p[j].x) && ((i != 0 && j != 5) || p[i].y > p[j].y) && ((i != 1 && j != 4) || p[i].y < p[j].y))) {
+                dis.push(dx + dy);
+                d[dis[dis.length - 1]] = [i, j];
+            }
+        }
+    }
+    if (dis.length == 0) {
+        var res = [0, 4];
+    } else {
+        res = d[Math.min.apply(Math, dis)];
+    }
+    var x1 = p[res[0]].x,
+        y1 = p[res[0]].y,
+        x4 = p[res[1]].x,
+        y4 = p[res[1]].y;
+    dx = Math.max(Math.abs(x1 - x4) / 2, 10);
+    dy = Math.max(Math.abs(y1 - y4) / 2, 10);
+    var x2 = [x1, x1, x1 - dx, x1 + dx][res[0]].toFixed(3),
+        y2 = [y1 - dy, y1 + dy, y1, y1][res[0]].toFixed(3),
+        x3 = [0, 0, 0, 0, x4, x4, x4 - dx, x4 + dx][res[1]].toFixed(3),
+        y3 = [0, 0, 0, 0, y1 + dy, y1 - dy, y4, y4][res[1]].toFixed(3);
+    var path = ["M", x1.toFixed(3), y1.toFixed(3), "C", x2, y2, x3, y3, x4.toFixed(3), y4.toFixed(3)].join(" ");
+return(path)
 }

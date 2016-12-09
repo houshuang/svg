@@ -13,10 +13,10 @@ export const activities = [
 
 
 export const connections = [
-  [1,2],
-  [1,4],
-  [3,7],
-  [5,9]
+  [4,1],
+  [5,2],
+  // [3,7],
+  // [5,9]
 ]
 
 

@@ -2,12 +2,15 @@ import React from 'react'
 import { DraggableCore } from 'react-draggable'
 import { drawPath } from './path'
 
-export const Line = ({ coords: [x1, y1, x2, y2] }) => 
+export const Line = ({ coords: [x1, y1, x2, y2] }) => {
+  console.log(drawPath(x1, y1, x2, y2))
+  return (
         <path 
           d={drawPath(x1, y1, x2, y2)}
           fill='transparent'
           stroke='grey'
           strokeWidth='2'/>
+  )}
 
 export const Lines = ({connections, activities}) =>
   <g>
