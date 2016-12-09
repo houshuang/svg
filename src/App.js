@@ -1,68 +1,84 @@
 import React, { Component } from 'react';
 import { findDOMNode } from 'react-dom'
 import { DraggableCore } from 'react-draggable'
+import { activities as initialActivities, connections as initialConnections} from './data'
+import { Lines, Line, SBox } from './components'
+import { LevelLines, PanMap } from './fixed_components'
 import './App.css';
 
-// id, level, x, title
-const activities = [
-  [1, 1, 30, 'Video'],
-  [2, 2, 60, 'Quiz'],
-  [3, 1, 150, 'Hello'],
-  [4, 3, 300, 'Something'],
-  [5, 4, 900, 'Quiz'],
-  [6, 5, 1500, 'Forum'],
-  [7, 5, 3900, 'Final'],
-  [8, 5, 2500, 'Final'],
-  [9, 5, 3000, 'Final']
-]
-
-
-const SBox = ({ x, level, title, rest }) =>
-  <g>
-    <rect x={x} y={(level * 100) + 50 } fill='white' stroke='grey' rx={10} width={100} height={30} {...rest} />
-    <text x={x + 3} y={(level * 100) + 70 }>{title}</text>
-  </g>
-
-  class PanMap extends Component {
-    constructor(props) {
-      super(props)
-      this.state = {x: 0}
-    }
-    handleDrag = (e, {node, deltaX, deltaY}) => {
-      const newX = Math.min(Math.max(this.state.x + (deltaX), 0), 750)
-      this.setState({x: newX })
-      this.props.moved(Math.min(3000, this.state.x * 4))
+class Graph extends Component { 
+  constructor(props) {
+    super(props);
+    this.state = {offset: null, current: null}
+  }
+  componentDidMount() {
+    this.setState({offset: findDOMNode(this).getBoundingClientRect()})
+  }
+  resizeFn(id) { return (x) => this.props.resizeFn(id, x) }
+  moveFn(id) { 
+    let top, left
+    if(this.state && this.state.offset) {
+      left = this.state.offset.left
+    } else {
+      left = 0
     }
 
-    render() { 
-      const { scaleFactor } = this.props
-
-      return(
-        <DraggableCore onDrag={this.handleDrag}>
-          <rect 
-            x={this.state.x} 
-            y={0} 
-            fill='transparent' 
-            stroke='black' 
-            strokeWidth={scaleFactor} 
-            rx={10} 
-            width={250} 
-            height={150} />
-        </DraggableCore>
-      )
-    }
+    return (x) => this.props.moveFn(id, x - left + this.props.offset) 
   }
 
-class Graph extends Component { 
+  connectStart(id) { return (x, y) => this.props.connectStart(id, x, y) }
+  connectStop(id) { return () => {
+    this.props.connect(id, this.state.current)
+    this.setState({current: null})
+    this.props.connectStop(id) 
+  }
+  }
+  onOver = (id) => () => this.setState({current: id})
+  connectDrag(id) { 
+    let top, left
+    if(this.state && this.state.offset) {
+      left = this.state.offset.left
+      top = this.state.offset.top
+    } else {
+      left = 0
+      top = 0
+    }
+
+    return (x, y) => this.props.connectDrag(id, x-left, y-top) 
+  }
   render() {
-    const { boxX, boxY, width, height, hasPanMap, scaleFactor = 1, moved, ...rest} = this.props
+    const { width, height, hasPanMap, viewBox, dragFrom, dragCoords, dragging, activities, connections, sizeFn, connectorLine, scaleFactor = 1, moved, resizeFn, ...rest} = this.props
     return (
       <svg width={width} height={height} >
-        <svg {...rest} >
-         <rect x={0} y={0} fill='#fcf9e9' stroke='transparent' rx={10 * scaleFactor} width={width * Math.max(4, scaleFactor)} height={height * scaleFactor} />
-        { activities.map( ([id, level, x, title]) => <SBox key={id} level={level} x={x} title={title} /> ) }
-      </svg>
-        <rect x={0} y={0} fill='transparent' stroke='grey' strokeWidth={1} rx={10} width={width} height={height} />
+        <svg viewBox={viewBox}>
+          <rect 
+            x={0} 
+            y={0} 
+            fill='#fcf9e9' 
+            stroke='transparent' 
+            rx={10 * scaleFactor} 
+            width={width * Math.max(4, scaleFactor)} 
+            height={height * scaleFactor} />
+          <LevelLines />
+          <Lines connections={connections} activities={activities} />
+          { !!dragging && <Line coords={[dragFrom[0], dragFrom[1], ...dragCoords]} /> }
+          { activities.map( ([id, level, x, title, width]) => 
+            <SBox 
+              highlighted={dragging && this.state.current === id && dragFrom[2] != id}
+              resizeFn={this.resizeFn(id)} 
+              onOver={this.onOver(id)}
+              moveDrag={this.moveFn(id)}
+              connectStart={this.connectStart(id)}
+              connectStop={this.connectStop(id)}
+              connectDrag={this.connectDrag(id)}
+              width={width} 
+              key={id} 
+              level={level} 
+              x={x} 
+              title={title} /> 
+          ) }
+
+        </svg>
         { !!hasPanMap && <PanMap scaleFactor={scaleFactor} moved={moved}/> }
       </svg>
     )
@@ -72,31 +88,73 @@ class Graph extends Component {
 class App extends Component {
   constructor(props) {
     super(props);
-    this.state = {x: 0, y: 0, move: 0}
+    this.state = {
+      x: 0, 
+      y: 0, 
+      move: 0, 
+      activities: initialActivities.map(x => ([...x, 100])), 
+      connections: [...initialConnections],
+      dragging: false,
+      dragFrom: [],
+      dragCoords: []
+    }
   }
 
   pan = (x) => {
     this.setState({x: x})
   }
 
-  mouseMove = (e) => {
-    const svg = findDOMNode(this.refs.svg)
-    const {left, top} = svg.getBoundingClientRect()
-    this.setState({x: e.clientX - left, y: e.clientY - top})
-    e.stopPropagation()
-    e.preventDefault()
+  connectStart = (id, x, y) => this.setState({dragging: id, dragFrom: [x,y,id]})
+  connectStop = () => this.setState({dragging: false, dragFrom: [], dragCoords: []})
+  connectDrag = (id, x, y) => this.setState({dragCoords: [x+this.state.x,y]})
+  connect = (id1, id2) => {
+    if(id1 != id2) {
+      this.setState({connections: [...this.state.connections, [id1, id2]]})
+    }
   }
-
+  resizeFn = (getid, newl) => {
+    this.setState({activities: 
+      this.state.activities.map(([id, level, x, t, l]) => id === getid ? [id, level, x, t, newl] : [id, level, x, t, l])})
+  } 
+  moveFn = (getid, newx) => {
+    this.setState({activities: 
+      this.state.activities.map(([id, level, x, t, l]) => id === getid ? [id, level, newx, t, l] : [id, level, x, t, l])})
+  } 
 
   render() {
     return (
       <div className="App" >
         <br/>
-        <Graph ref='svg' width={1000} height={600}
-          viewBox={`${this.state.x} 0 1000 600`} preserveAspectRatio='xMinYMin slice' scaleFactor={1} />
+        <Graph 
+          ref='svg' 
+          width={1000} 
+          height={600}
+          viewBox={`${this.state.x} 0 1000 600`} 
+          preserveAspectRatio='xMinYMin slice' 
+          scaleFactor={1}
+          offset={this.state.x}
+          connections={this.state.connections} 
+          activities={this.state.activities}
+          dragFrom={this.state.dragFrom}
+          moveFn={this.moveFn}
+          dragCoords={this.state.dragCoords}
+          dragging={this.state.dragging}
+          connectStart={this.connectStart}
+          connectStop={this.connectStop}
+          connectDrag={this.connectDrag}
+          connect={this.connect}
+          resizeFn={this.resizeFn}/>
         <p/>
-        <Graph width={1000} height={150}
-          viewBox={'0 0 4000 600'} preserveAspectRatio='xMinYMin slice' hasPanMap scaleFactor={4} moved={this.pan}/>
+        <Graph 
+          width={1000} 
+          height={150}
+          viewBox={'0 0 4000 600'} 
+          preserveAspectRatio='xMinYMin slice' 
+          hasPanMap 
+          scaleFactor={4} 
+          moved={this.pan}
+          connections={this.state.connections} 
+          activities={this.state.activities} />
       </div>
     )
   }
