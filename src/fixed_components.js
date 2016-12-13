@@ -1,35 +1,20 @@
 import React, { Component } from 'react' 
 import { DraggableCore } from 'react-draggable'
+import { connect } from './store'
 
-export class PanMap extends Component {
-  constructor(props) {
-    super(props)
-    this.state = {x: 0}
-  }
-  handleDrag = (e, {node, deltaX, deltaY}) => {
-    const newX = Math.min(Math.max(this.state.x + (deltaX), 0), 750)
-    this.setState({x: newX })
-    this.props.moved(Math.min(3000, this.state.x * 4))
-  }
-
-  render() { 
-    const { scaleFactor } = this.props
-
-    return(
-      <DraggableCore onDrag={this.handleDrag}>
-        <rect 
-          x={this.state.x} 
-          y={0} 
-          fill='transparent' 
-          stroke='black' 
-          strokeWidth={scaleFactor} 
-          rx={10} 
-          width={250} 
-          height={150} />
-      </DraggableCore>
-    )
-  }
-}
+export const PanMap = connect(({ store: { panx, panDelta}, scaleFactor }) => 
+    <DraggableCore onDrag={(_, {deltaX}) => panDelta(deltaX)}>
+      <rect 
+        x={panx} 
+        y={0} 
+        fill='transparent' 
+        stroke='black' 
+        strokeWidth={scaleFactor} 
+        rx={10} 
+        width={250} 
+        height={150} />
+    </DraggableCore>
+)
 
 export const LevelLines = () => 
   <g>
