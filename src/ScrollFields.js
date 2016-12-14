@@ -20,13 +20,8 @@ const ScrollField = connect(({x, height, direction, store: { cancelScroll }}) =>
     style={{cursor: 'ew-resize'}} />
 )
 
-export default connect(({width, height, store: { scrollEnabled }} ) => {
-  if(!scrollEnabled) { return null }
-  return (
-    <g>
-      <ScrollField x={0} height={height} direction={-1} />
-      <ScrollField x={width - 100} height={height} direction={1} />
-    </g>
-  )
-}
-)
+export default ({ width, height })=> 
+  <g>
+    <ScrollField x={0} height={height} direction={-1} />
+    <ScrollField x={width - 100} height={height} direction={1} />
+  </g>
