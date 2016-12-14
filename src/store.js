@@ -109,6 +109,7 @@ class Store {
     if(targetAry.length > 0) { 
       this.connections.push(new Connection(this.draggingFromActivity, targetAry[0]))
     }
+    this.cancelScroll()
   }
 
   // user has dropped line somewhere, clear out
@@ -128,12 +129,24 @@ class Store {
   }
 
   @observable currentlyMovingActivity
+  @observable currentlyResizingActivity
+  @action startResizing = (activity) => {
+    this.mode = 'resizing'
+    this.currentlyResizingActivity = activity
+  }
   @action startMoving = (activity) => {
     this.mode = 'moving'
     this.currentlyMovingActivity = activity
   }
 
-  @action stopMoving = () => this.mode = ''
+  @action stopMoving = () => {
+    this.mode = ''
+    this.cancelScroll()
+  }
+  @action stopResizing = () => {
+    this.mode = ''
+    this.cancelScroll()
+  }
 
   @computed get scrollEnabled() {
     return !!(['dragging', 'moving', 'resizing'].includes(this.mode))
@@ -150,6 +163,9 @@ class Store {
     if (oldpan !== this.panx) {
       if(this.mode === 'dragging') { 
         this.dragCoords[0] += (deltaX * 4)
+      }
+      if(this.mode === 'resizing') { 
+        this.currentlyResizingActivity.width += (deltaX * 4)
       }
       if(this.mode === 'moving') { 
         this.currentlyMovingActivity.x += (deltaX * 4)
