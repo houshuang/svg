@@ -1,30 +1,39 @@
 import cuid from 'cuid'
-import { computed, action, observable } from 'mobx'
+import { computed, action, observable, useStrict } from 'mobx'
 import { observer, inject } from 'mobx-react'
 import { initialConnections, initialActivities } from './data'
 import { drawPath } from './path'
+
+useStrict(true)
 
 const getid = (ary, id) => {
   const res = ary.filter(x => x.id === id)
   return(res && res[0])
 }
 
-
 class Activity {
   @observable name
   @observable plane
   @observable x
   @observable width
+  @observable over
+  @action move = (deltax) => this.x += deltax 
+  @action resize = (deltax) => this.width += deltax 
+  @action onOver = () => this.over = true
+  @action onLeave = () => this.over = false
 
-  constructor(plane, x, name, width, id) {
+  @action init = ( plane, x, name, width, id ) => {
     this.id = id || cuid()
     this.name = name
     this.plane = plane
     this.x = x
     this.width = width
+    this.over = false
   }
-  @action resize = (new_length) => this.length = new_length
-  @action move = (new_x) => this.x = new_x
+
+  constructor(...args) {
+    this.init(...args)
+  }
 
   @computed get y() { return (this.plane * 100) + 50 }
 }
@@ -32,11 +41,14 @@ class Activity {
 class Connection {
   @observable source
   @observable target
-
-  constructor(source, target, id) {
+  @action init = (source, target, id) => {
     this.source = source
     this.target = target
     this.id = id || cuid()
+  }
+
+  constructor(...args) {
+    this.init(...args)
   }
 
   @computed get path() {
@@ -50,28 +62,55 @@ class Connection {
 }
 
 class Store {
-  constructor() {
+  @action init = () => {
     this.panx = 0
     this.mode = null
     this.activities = initialActivities.map(x => new Activity(...x))
-    this.connections = initialConnections.map(x => 
-      new Connection(getid(this.activities, x[0]), getid(this.activities, x[1])))
+    this.connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1]))
+    )
+  }
+
+  constructor() {
+    this.init()
   }
 
   @observable connections 
+  @observable currentlyOver
   @action addConnection = (from, to) => this.connections.push([from, to]) 
+  @action onOver = (activity) => {
+    if (this.mode === 'dragging') {
+      
+    }
+  }
+  @computed get highlighted() { 
+    return this.mode === 'dragging' && (this.currentlyOver !== this.draggingFromActivity) && this.currentlyOver
+  }
 
   @observable activities 
 
   @observable mode 
   @observable draggingFrom
+  @observable draggingFromActivity
   @observable dragCoords
 
   // user begins dragging a line to make a connection
-  @action connectStart = (id, x, y) => {
+  @action startDragging = (activity) => {
     this.mode = 'dragging'
-    this.draggingFrom = [x, y]
+    const coords = [activity.x + activity.width - 10, activity.y + 15]
+    this.draggingFrom = [...coords]
+    this.draggingFromActivity = activity
+    this.dragCoords = [...coords]
   }
+  @action dragging = (deltax, deltay) => this.dragCoords = [this.dragCoords[0] + deltax, this.dragCoords[1] + deltay]
+  @computed get dragPath() { return this.mode === 'dragging' ? drawPath(...this.draggingFrom, ...this.dragCoords) : null }
+  @action stopDragging = () => {
+    this.mode = ''
+    const targetAry = this.activities.filter(x => x.over)
+    if(targetAry.length > 0) { 
+      this.connections.push(new Connection(this.draggingFromActivity, targetAry[0]))
+    }
+  }
+
 
   // user has dropped line somewhere, clear out
   @action connectStop = () => {

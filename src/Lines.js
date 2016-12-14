@@ -10,6 +10,17 @@ export const Line = observer(({ connection }) =>
     strokeWidth='2' />
 )
 
+export const DragLine = connect(({ store: { dragPath, mode }}) => {
+  if(mode !== 'dragging') { return null }
+  return (
+    <path 
+      d={dragPath}
+    fill='transparent'
+    stroke='grey'
+    strokeWidth='2' />
+  )
+})
+
 export default connect(({store: { connections }} ) =>
   <g>
     { connections.map(connection => <Line key={connection.id} connection={connection} />) }

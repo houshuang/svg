@@ -2,15 +2,17 @@ import React from 'react'
 import { DraggableCore } from 'react-draggable'
 import { connect } from './store'
 
-const Activity = connect(({ store: { onOver }, activity }) => {
-  const { x, y, width, title, highlighted } = activity
+const Activity = connect(({ store: { startDragging, stopDragging, dragging, mode, draggingFromActivity }, activity}) => {
+  const { x, y, width, title, move, resize, onOver, onLeave, over } = activity
   return (
     // record that mouse moves over box, for linking/highlighting
-    <g onMouseOver={() => onOver(activity)}>
+    <g 
+      onMouseOver={onOver}
+      onMouseLeave={onLeave}>
       <rect 
         x={x} 
         y={y} 
-        fill={!highlighted ? 'transparent' : 'yellow'}
+        fill={over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'transparent'}
         stroke='grey' 
         rx={10} 
         width={width} 
@@ -28,7 +30,10 @@ const Activity = connect(({ store: { onOver }, activity }) => {
         stroke='black'
       />
       
-    <DraggableCore>
+    <DraggableCore
+      onStart={() => startDragging(activity)}
+      onDrag={(_, {deltaX, deltaY}) => dragging(deltaX, deltaY)}
+      onStop={stopDragging} >
         <circle 
           cx={x + width - 10} 
           cy={y + 15 } 
@@ -38,7 +43,9 @@ const Activity = connect(({ store: { onOver }, activity }) => {
           style={{cursor: 'crosshair'}} />
       </DraggableCore>
 
-      <DraggableCore>
+      // resize box (x axis)
+      <DraggableCore
+        onDrag={(_, {deltaX}) => resize(deltaX)}>
       <rect
         fill='transparent'
         stroke='transparent'
@@ -48,7 +55,10 @@ const Activity = connect(({ store: { onOver }, activity }) => {
         height={30}
         style={{cursor: 'ew-resize'}} />
     </DraggableCore>
-    <DraggableCore>
+
+    // moving the whole box
+    <DraggableCore 
+      onDrag={(_, {deltaX}) => move(deltaX)}>
       <rect 
         x={x} 
         y={y} 

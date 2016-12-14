@@ -12,7 +12,6 @@ const App = connect(({store: {panOffset}}) =>
     <DevTools />
     <br/>
     <Graph 
-      ref='svg' 
       width={1000} 
       height={600}
       viewBox={`${panOffset} 0 1000 600`} 
