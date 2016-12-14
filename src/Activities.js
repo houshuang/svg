@@ -2,7 +2,7 @@ import React from 'react'
 import { DraggableCore } from 'react-draggable'
 import { connect } from './store'
 
-const Activity = connect(({ store: { startDragging, stopDragging, dragging, mode, draggingFromActivity }, activity}) => {
+const Activity = connect(({ store: { startDragging, stopDragging, dragging, mode, draggingFromActivity, startMoving, stopMoving }, activity}) => {
   const { x, y, width, title, move, resize, onOver, onLeave, over } = activity
   return (
     // record that mouse moves over box, for linking/highlighting
@@ -58,7 +58,9 @@ const Activity = connect(({ store: { startDragging, stopDragging, dragging, mode
 
     // moving the whole box
     <DraggableCore 
-      onDrag={(_, {deltaX}) => move(deltaX)}>
+      onStart={() => startMoving(activity)}
+      onDrag={(_, {deltaX}) => move(deltaX)}
+      onStop={stopMoving}>
       <rect 
         x={x} 
         y={y} 

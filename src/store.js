@@ -66,8 +66,8 @@ class Store {
     this.panx = 0
     this.mode = null
     this.activities = initialActivities.map(x => new Activity(...x))
-    this.connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1]))
-    )
+    this.connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1])))
+    this.mode = ''
   }
 
   constructor() {
@@ -127,16 +127,34 @@ class Store {
     this.scrollIntervalID = false
   }
 
+  @observable currentlyMovingActivity
+  @action startMoving = (activity) => {
+    this.mode = 'moving'
+    this.currentlyMovingActivity = activity
+  }
+
+  @action stopMoving = () => this.mode = ''
+
+  @computed get scrollEnabled() {
+    return !!(['dragging', 'moving', 'resizing'].includes(this.mode))
+  }
+
   // mouse pointer during line connection dragging
   @action connectDragDelta = (xdelta, ydelta) => this.dragCoords = [xdelta, ydelta]
 
   @observable panx 
   @action panDelta = (deltaX) => {
-    if(this.mode === 'dragging') { 
-      this.dragCoords[0] += (deltaX * 4)
-      console.log(this.dragCoords)
-    }
+    const oldpan = this.panx
     this.panx = Math.min(Math.max(this.panx + (deltaX), 0), 750)
+    // only add if we actually panned
+    if (oldpan !== this.panx) {
+      if(this.mode === 'dragging') { 
+        this.dragCoords[0] += (deltaX * 4)
+      }
+      if(this.mode === 'moving') { 
+        this.currentlyMovingActivity.x += (deltaX * 4)
+      }
+    }
   }
   
   @computed get panOffset() { return this.panx * 4 }
