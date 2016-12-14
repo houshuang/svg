@@ -2,6 +2,7 @@ import React from 'react'
 import Lines, { DragLine } from './Lines'
 import Activities from './Activities'
 import { LevelLines, PanMap } from './fixed_components'
+import ScrollFields from './ScrollFields'
 
 export default ({ width, height, hasPanMap, viewBox, scaleFactor = 1 }) => 
   <svg width={width} height={height} >
@@ -19,5 +20,7 @@ export default ({ width, height, hasPanMap, viewBox, scaleFactor = 1 }) =>
       { !hasPanMap && <DragLine /> }
       <Activities />
     </svg>
-    { !!hasPanMap && <PanMap scaleFactor={scaleFactor} /> }
+    { !!hasPanMap ? 
+        <PanMap scaleFactor={scaleFactor} /> :
+        <ScrollFields width={width} height={height} /> }
   </svg>

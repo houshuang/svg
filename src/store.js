@@ -111,20 +111,33 @@ class Store {
     }
   }
 
-
   // user has dropped line somewhere, clear out
   @action connectStop = () => {
     this.mode = null
+    this.cancelScroll()
     this.draggingFrom = []
     this.dragCoords = []
+  }
+  @observable scrollIntervalID
+  @action storeInterval = (interval) => {
+    this.scrollIntervalID = interval
+  }
+  @action cancelScroll = () => {
+    window.clearInterval(this.scrollIntervalID)
+    this.scrollIntervalID = false
   }
 
   // mouse pointer during line connection dragging
   @action connectDragDelta = (xdelta, ydelta) => this.dragCoords = [xdelta, ydelta]
 
   @observable panx 
-  @action panDelta = (deltaX) => 
+  @action panDelta = (deltaX) => {
+    if(this.mode === 'dragging') { 
+      this.dragCoords[0] += (deltaX * 4)
+      console.log(this.dragCoords)
+    }
     this.panx = Math.min(Math.max(this.panx + (deltaX), 0), 750)
+  }
   
   @computed get panOffset() { return this.panx * 4 }
 }
