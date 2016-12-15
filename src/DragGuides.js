@@ -2,12 +2,13 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { connect } from './store'
 
+const formatTime = (pixels) => (pixels / (3900/120)).toFixed(0) + ' min.'
 const DragGuide = observer(({ x, current }) => {
   const middle = ((x - current) / 2.0) + current - 5
   return (
     <g>
       <text x={middle} y={300}>
-        {Math.abs(x - current)}
+        {formatTime(Math.abs(x - current))}
       </text>
       <polygon x={middle} y={300} points='492.426,246.213 406.213,160 406.213,231.213 86.213,231.213 86.213,160 0,246.213 86.213,332.427 86.213,261.213
       406.213,261.213 406.213,332.427' transform={`translate(${middle - 17} 300) scale(0.1) `} />

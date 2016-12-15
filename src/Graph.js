@@ -1,7 +1,7 @@
 import React from 'react'
 import Lines, { DragLine } from './Lines'
 import Activities from './Activities'
-import { LevelLines, PanMap } from './fixed_components'
+import { LevelLines, PanMap, TimeScale } from './fixed_components'
 import ScrollFields from './ScrollFields'
 import DragGuides from './DragGuides'
 import { connect, store } from './store'
@@ -29,7 +29,12 @@ export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, vi
       <LevelLines />
       <Lines />
       { !hasPanMap && scrollEnabled && <DragLine /> }
-      <DragGuides />
+      { !hasPanMap && 
+        <g>
+        <DragGuides />
+        <TimeScale />
+        </g>
+      }
       <Activities />
     </svg>
     { !!hasPanMap &&  <PanMap scaleFactor={scaleFactor} />}

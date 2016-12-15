@@ -2,7 +2,7 @@ import React from 'react'
 import { DraggableCore } from 'react-draggable'
 import { connect } from './store'
 
-const Activity = connect(({ store: { startDragging, stopDragging, dragging, mode, 
+const Activity = connect(({ store: { activityOffsets, startDragging, stopDragging, dragging, mode, 
   draggingFromActivity, startMoving, stopMoving, startResizing, stopResizing }, activity}) => {
   const { x, y, width, title, move, resize, onOver, onLeave, over } = activity
   return (

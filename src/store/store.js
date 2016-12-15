@@ -9,6 +9,28 @@ const getid = (ary, id) => {
   return(res && res[0])
 }
 
+const getOffsets = (plane, activities) => {
+  const ary = activities.filter(act => act.plane === plane).sort((a, b) => a.x - b.x)
+  const levels = ary.reduce(
+    ([acc, res], item) => {
+      let l = 0
+      while(true) {
+        if((acc[l] || 0) <= item.x) {
+          acc[l] = item.x + item.width
+          res[item.id] = l
+          break
+        }
+        if(l > 5) {
+          break
+        }
+        l += 1
+      }
+      return [acc, res]
+    }, [[], {}]
+  )
+  return levels[1]
+}
+
 // find activities immediately to the left and to the right of the current activity
 // to draw boundary markers and control movement by dragging and resizing
 const calculateBounds = (activity, activities) => {
@@ -25,12 +47,15 @@ export default class Store {
     this.activities = initialActivities.map(x => new Activity(...x))
     this.connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1])))
     this.mode = ''
+    this.overlapAllowed = false
   }
 
   constructor() {
     this.init()
   }
 
+  @observable overlapAllowed
+  @action updateSettings = (settings) => this.overlapAllowed = settings.overlapAllowed
   @observable connections 
   @observable currentlyOver
   @action addConnection = (from, to) => this.connections.push([from, to]) 
@@ -108,6 +133,13 @@ export default class Store {
 
   // mouse pointer during line connection dragging
   @action connectDragDelta = (xdelta, ydelta) => this.dragCoords = [xdelta, ydelta]
+  @computed get activityOffsets() {
+    const activities = this.activities
+    return(
+      [1, 2, 3].reduce((acc, plane) => 
+        ({...acc, ...getOffsets(plane, activities)}), {})
+    )
+  }
 
   @observable panx 
   @action panDelta = (deltaX) => {

@@ -3,11 +3,11 @@ import { store } from './index'
 import cuid from 'cuid'
 
 const between = (minval, maxval, x) => {
-  console.log(minval, maxval, x)
   minval = minval || 0
   maxval = maxval || 99999
   return (Math.min(Math.max(x, minval), maxval))
 }
+
 export default class Activity {
   @observable title
   @observable plane
@@ -16,7 +16,11 @@ export default class Activity {
   @observable over
 
   @action move = (deltax) => {
-    this.x = between((store.leftbound && (store.leftbound.x + store.leftbound.width)), (store.rightbound ? store.rightbound.x - this.width : 4000 - this.width), this.x + deltax)
+    if(store.overlapAllowed) {
+      this.x = (between(0, 4000 - this.width, this.x + deltax))
+    } else {
+      this.x = between((store.leftbound && (store.leftbound.x + store.leftbound.width)), (store.rightbound ? store.rightbound.x - this.width : 4000 - this.width), this.x + deltax)
+    }
     this.mode = 'dragging'
   }
 
@@ -40,5 +44,8 @@ export default class Activity {
     this.init(...args)
   }
 
-  @computed get y() { return (this.plane * 100) + 50 }
+  @computed get y() { 
+    const offset = store.activityOffsets[this.id]
+    return (this.plane * 100) + 50 - (offset * 30)
+  }
 }

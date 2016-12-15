@@ -1,8 +1,8 @@
 // id, level, x, title
 export const initialActivities = [
-  [2, 30, 'Video',100, 1],
-  [2, 150, 'Quiz',150, 2],
-  [2, 320, 'Hello',50, 3],
+  [2, 30, 'Video',150, 1],
+  [2, 200, 'Quiz',150, 2],
+  [2, 400, 'Hello',50, 3],
   [3, 500, 'Something',200, 4],
   [1, 900, 'Quiz',100, 5],
   [3, 1500, 'Forum',100, 6],
@@ -13,8 +13,6 @@ export const initialActivities = [
 
 
 export const initialConnections = [
-  [2,5],
-  [2,3]
 ]
 
 
