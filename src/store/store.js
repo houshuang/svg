@@ -76,19 +76,18 @@ export default class Store {
     this.scrollIntervalID = false
   }
 
-  @observable currentlyMovingActivity
-  @observable currentlyResizingActivity
+  @observable currentActivity
   @observable leftbound
   @observable rightbound
 
   @action startResizing = (activity) => {
     this.mode = 'resizing'
-    this.currentlyResizingActivity = activity
+    this.currentActivity = activity
     this.rightbound = calculateBounds(activity, this.activities)[1]
   }
   @action startMoving = (activity) => {
     this.mode = 'moving'
-    this.currentlyMovingActivity = activity
+    this.currentActivity = activity
     let [leftbound, rightbound] = calculateBounds(activity, this.activities)
     this.leftbound = leftbound
     this.rightbound = rightbound
@@ -120,10 +119,10 @@ export default class Store {
         this.dragCoords[0] += (deltaX * 4)
       }
       if(this.mode === 'resizing') { 
-        this.currentlyResizingActivity.resize(deltaX * 4)
+        this.currentActivity.resize(deltaX * 4)
       }
       if(this.mode === 'moving') { 
-        this.currentlyMovingActivity.move(deltaX * 4)
+        this.currentActivity.move(deltaX * 4)
       }
     }
   }
