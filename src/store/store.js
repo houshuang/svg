@@ -1,13 +1,21 @@
 import { computed, action, observable } from 'mobx'
 import { initialConnections, initialActivities } from '../data'
 import { drawPath } from '../path'
-
 import Activity from './activity'
 import Connection from './connection'
 
 const getid = (ary, id) => {
   const res = ary.filter(x => x.id === id)
   return(res && res[0])
+}
+
+// find activities immediately to the left and to the right of the current activity
+// to draw boundary markers and control movement by dragging and resizing
+const calculateBounds = (activity, activities) => {
+  const sorted = activities.filter(x => x.id !== activity.id).sort((a, b) => a.x - b.x)
+  const leftbound = sorted.filter(act => act.x <= activity.x).pop()
+  const rightbound = sorted.filter(act => act.x >= (activity.x + activity.width)).shift()
+  return([leftbound, rightbound])
 }
 
 export default class Store {
@@ -26,19 +34,10 @@ export default class Store {
   @observable connections 
   @observable currentlyOver
   @action addConnection = (from, to) => this.connections.push([from, to]) 
-  @action onOver = (activity) => {
-    if (this.mode === 'dragging') {
-      
-    }
-  }
-  @computed get highlighted() { 
-    return this.mode === 'dragging' && (this.currentlyOver !== this.draggingFromActivity) && this.currentlyOver
-  }
-
   @observable activities 
 
   @observable mode 
-  @observable draggingFrom
+  @observable draggingFromA
   @observable draggingFromActivity
   @observable dragCoords
 
@@ -79,13 +78,20 @@ export default class Store {
 
   @observable currentlyMovingActivity
   @observable currentlyResizingActivity
+  @observable leftbound
+  @observable rightbound
+
   @action startResizing = (activity) => {
     this.mode = 'resizing'
     this.currentlyResizingActivity = activity
+    this.rightbound = calculateBounds(activity, this.activities)[1]
   }
   @action startMoving = (activity) => {
     this.mode = 'moving'
     this.currentlyMovingActivity = activity
+    let [leftbound, rightbound] = calculateBounds(activity, this.activities)
+    this.leftbound = leftbound
+    this.rightbound = rightbound
   }
 
   @action stopMoving = () => {
@@ -114,10 +120,10 @@ export default class Store {
         this.dragCoords[0] += (deltaX * 4)
       }
       if(this.mode === 'resizing') { 
-        this.currentlyResizingActivity.width += (deltaX * 4)
+        this.currentlyResizingActivity.resize(deltaX * 4)
       }
       if(this.mode === 'moving') { 
-        this.currentlyMovingActivity.x += (deltaX * 4)
+        this.currentlyMovingActivity.move(deltaX * 4)
       }
     }
   }

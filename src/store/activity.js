@@ -1,14 +1,24 @@
 import { observable, computed, action } from 'mobx'
+import { store } from './index'
 import cuid from 'cuid'
 
+const between = (minval, maxval, x) => Math.min(Math.max(x, minval), maxval)
 export default class Activity {
   @observable title
   @observable plane
   @observable x
   @observable width
   @observable over
-  @action move = (deltax) => this.x += deltax 
-  @action resize = (deltax) => this.width += deltax 
+
+  @action move = (deltax) => {
+    this.x = between(store.leftbound.x + store.leftbound.width, store.rightbound.x - this.width, this.x + deltax)
+    this.mode = 'dragging'
+  }
+
+  @action resize = (deltax) => {
+    this.width = between(20, store.rightbound.x - this.x, this.width + deltax)
+    this.mode = 'resizing'
+  }
   @action onOver = () => this.over = true
   @action onLeave = () => this.over = false
 

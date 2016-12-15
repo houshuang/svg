@@ -3,6 +3,7 @@ import Lines, { DragLine } from './Lines'
 import Activities from './Activities'
 import { LevelLines, PanMap } from './fixed_components'
 import ScrollFields from './ScrollFields'
+import DragGuides from './DragGuides'
 import { connect, store } from './store'
 
 const scrollMouse = (e) => {
@@ -28,6 +29,7 @@ export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, vi
       <LevelLines />
       <Lines />
       { !hasPanMap && scrollEnabled && <DragLine /> }
+      <DragGuides />
       <Activities />
     </svg>
     { !!hasPanMap &&  <PanMap scaleFactor={scaleFactor} />}
