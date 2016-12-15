@@ -13,14 +13,14 @@ const Activity = connect(({ store: { startDragging, stopDragging, dragging, mode
       <rect 
         x={x} 
         y={y} 
-        fill={over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'transparent'}
+        fill={over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'white'}
         stroke='grey' 
         rx={10} 
         width={width} 
         height={30} />
       <text 
         x={x + 3} 
-        y={y + 20} >
+        y={y + 20}>
         {title}
       </text>
       <circle 

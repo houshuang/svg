@@ -13,8 +13,8 @@ export const initialActivities = [
 
 
 export const initialConnections = [
-  [4,1],
-  [5,2]
+  [1,4],
+  [2,5]
 ]
 
 

@@ -1,67 +1,16 @@
-import cuid from 'cuid'
-import { computed, action, observable, useStrict } from 'mobx'
-import { observer, inject } from 'mobx-react'
-import { initialConnections, initialActivities } from './data'
-import { drawPath } from './path'
+import { computed, action, observable } from 'mobx'
+import { initialConnections, initialActivities } from '../data'
+import { drawPath } from '../path'
 
-useStrict(true)
+import Activity from './activity'
+import Connection from './connection'
 
 const getid = (ary, id) => {
   const res = ary.filter(x => x.id === id)
   return(res && res[0])
 }
 
-class Activity {
-  @observable name
-  @observable plane
-  @observable x
-  @observable width
-  @observable over
-  @action move = (deltax) => this.x += deltax 
-  @action resize = (deltax) => this.width += deltax 
-  @action onOver = () => this.over = true
-  @action onLeave = () => this.over = false
-
-  @action init = ( plane, x, name, width, id ) => {
-    this.id = id || cuid()
-    this.name = name
-    this.plane = plane
-    this.x = x
-    this.width = width
-    this.over = false
-  }
-
-  constructor(...args) {
-    this.init(...args)
-  }
-
-  @computed get y() { return (this.plane * 100) + 50 }
-}
-
-class Connection {
-  @observable source
-  @observable target
-  @action init = (source, target, id) => {
-    this.source = source
-    this.target = target
-    this.id = id || cuid()
-  }
-
-  constructor(...args) {
-    this.init(...args)
-  }
-
-  @computed get path() {
-    return( drawPath(
-      this.source.x + this.source.width,
-      (this.source.plane * 100) + 65,
-      this.target.x,
-      (this.target.plane * 100) + 65)
-    )
-  }
-}
-
-class Store {
+export default class Store {
   @action init = () => {
     this.panx = 0
     this.mode = null
@@ -176,7 +125,3 @@ class Store {
   @computed get panOffset() { return this.panx * 4 }
 }
 
-export const store = new Store()
-window.store = store // for debugging
-
-export const connect = (comp) => inject('store')(observer(comp))

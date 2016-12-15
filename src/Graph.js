@@ -30,8 +30,7 @@ export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, vi
       { !hasPanMap && scrollEnabled && <DragLine /> }
       <Activities />
     </svg>
-    { !!hasPanMap ? 
-        <PanMap scaleFactor={scaleFactor} /> :
-        <ScrollFields width={width} height={height} /> }
+    { !!hasPanMap &&  <PanMap scaleFactor={scaleFactor} />}
+    { !hasPanMap && scrollEnabled && <ScrollFields width={width} height={height} /> }
       </svg>
 )
