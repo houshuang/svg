@@ -145,16 +145,20 @@ export default class Store {
   @action panDelta = (deltaX) => {
     const oldpan = this.panx
     this.panx = Math.min(Math.max(this.panx + (deltaX), 0), 750)
-    // only add if we actually panned
+    // only add if we actually panned, and check that we can actually more or resize before panning :)
     if (oldpan !== this.panx) {
       if(this.mode === 'dragging') { 
         this.dragCoords[0] += (deltaX * 4)
       }
       if(this.mode === 'resizing') { 
+        const oldwidth = this.currentActivity.width
         this.currentActivity.resize(deltaX * 4)
+        if (oldwidth === this.currentActivity.width) { this.panx = oldpan }
       }
       if(this.mode === 'moving') { 
+        const oldx = this.currentActivity.x
         this.currentActivity.move(deltaX * 4)
+        if (oldx === this.currentActivity.x) { this.panx = oldpan }
       }
     }
   }
