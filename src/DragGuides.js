@@ -47,8 +47,10 @@ export default connect(({ store: {leftbound, rightbound, mode, currentActivity }
   if(mode === 'moving') {
     return (
       <g>
-        { leftbound ? <DragGuide x={leftbound.x + leftbound.width} current={currentActivity.x} /> : null }
-        { rightbound ? <DragGuide x={rightbound.x} current={currentActivity.x + currentActivity.width} /> : null }
+        { leftbound ? <DragGuide x={leftbound.x + leftbound.width} current={currentActivity.x} /> : 
+        <DragGuide x={0} current={currentActivity.x} /> }
+        { rightbound ? <DragGuide x={rightbound.x} current={currentActivity.x + currentActivity.width} /> : 
+        <DragGuide x={4000} current={currentActivity.x + currentActivity.width} /> }
       </g>
     )
   }

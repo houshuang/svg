@@ -15,7 +15,7 @@ const ScrollField = connect(({x, height, direction, store: { cancelScroll }}) =>
     stroke='transparent'
     x={x}
     y={0}
-    width={100}
+    width={50}
     height={height}
     style={{cursor: 'ew-resize'}} />
 )
@@ -23,5 +23,5 @@ const ScrollField = connect(({x, height, direction, store: { cancelScroll }}) =>
 export default ({ width, height })=> 
   <g>
     <ScrollField x={0} height={height} direction={-1} />
-    <ScrollField x={width - 100} height={height} direction={1} />
+    <ScrollField x={width - 50} height={height} direction={1} />
   </g>
