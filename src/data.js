@@ -1,6 +1,6 @@
 // id, level, x, title
 export const initialActivities = [
-  [2, 30, 'Video',150, 1],
+  [2, 30, 'Video very long text extremely long in fact',150, 1],
   [2, 200, 'Quiz',150, 2],
   [2, 400, 'Hello',50, 3],
   [3, 500, 'Something',200, 4],
