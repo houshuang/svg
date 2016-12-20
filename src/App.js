@@ -19,11 +19,11 @@ const settingsSchema = {
   }
 }
 
-const Settings = connect(({store: { updateSettings }}) =>
+const Settings = connect(({store: { updateSettings, undo, canUndo }}) =>
   <Form
     schema={settingsSchema}
     onChange={({formData}) => updateSettings(formData)}>
-    <div></div>
+    <button type='button' disabled={!canUndo} onClick={undo}>Undo</button>
 </Form>
 )
 

@@ -49,11 +49,27 @@ export default class Store {
     this.connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1])))
     this.mode = ''
     this.overlapAllowed = false
+    this.history = []
+    this.addHistory()
   }
 
   constructor() {
     this.init()
   }
+
+  @action addHistory = () => {
+    console.log('historizing', this.history.length)
+    this.history.push([this.connections.map(x=>({...x})), this.activities.map(x => ({...x})) ])
+  }
+
+  @action undo = () => {
+    const [connections, activities] = this.history.pop()
+    this.activities = activities.map(x => new Activity(x.plane, x.x, x.title, x.width, x.id))
+    this.connections = connections.map(x => new Connection(getid(this.activities, x.source.id), getid(this.activities, x.target.id)))
+  }
+
+  @computed get canUndo() { return(this.history.length > 0) }
+  @observable history
 
   @observable overlapAllowed
   @action updateSettings = (settings) => this.overlapAllowed = settings.overlapAllowed
@@ -76,8 +92,11 @@ export default class Store {
     this.dragCoords = [...coords]
   }
   @action deleteSelected = () => {
+    const conn = this.connections.length
+    const act = this.activities.length
     this.connections = this.connections.filter(x => !x.selected)
     this.activities = this.activities.filter(x => !x.selected)
+    if(conn !== this.connections.length || act !== this.activities.length) { this.addHistory() }
   }
 
   @action cancelAll = () => {
@@ -94,12 +113,14 @@ export default class Store {
   @action swapActivities = (left, right) => {
     right.x = left.x
     left.x = right.x + right.width
+    this.addHistory()
   }
   @action stopDragging = () => {
     this.mode = ''
     const targetAry = this.activities.filter(x => x.over)
     if(targetAry.length > 0 && (this.draggingFromActivity.id !== targetAry[0].id)) {
       this.connections.push(new Connection(this.draggingFromActivity, targetAry[0]))
+      this.addHistory()
     }
     this.cancelScroll()
   }
@@ -132,6 +153,7 @@ export default class Store {
   @action rename(newTitle) {
     this.renameOpen.title = newTitle
     this.renameOpen = null
+    this.addHistory()
   }
 
   @action startResizing = (activity) => {
@@ -150,10 +172,12 @@ export default class Store {
 
   @action stopMoving = () => {
     this.mode = ''
+    this.addHistory()
     this.cancelScroll()
   }
   @action stopResizing = () => {
     this.mode = ''
+    this.addHistory()
     this.cancelScroll()
   }
 

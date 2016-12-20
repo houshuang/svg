@@ -7,7 +7,11 @@ export default class Connection {
   @observable source
   @observable target
   @observable selected
-  @action select = () => this.selected = true
+  @action select = () => {
+    store.unselect()
+    this.selected = true
+  }
+
   @action init = (source, target, id) => {
     this.source = source
     this.target = target
