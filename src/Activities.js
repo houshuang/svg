@@ -4,7 +4,7 @@ import { connect } from './store'
 
 const Activity = connect(({ store: { activityOffsets, startDragging, stopDragging, dragging, mode,
   draggingFromActivity, scale, startMoving, stopMoving, startResizing, stopResizing }, activity, scaled}) => {
-    const { y, title, move, resize, onOver, onLeave, over } = activity
+    const { y, selected, select, title, move, resize, onOver, onLeave, setRename, over } = activity
     let x, width
     if(scaled) {
       x = activity.x * scale
@@ -13,16 +13,19 @@ const Activity = connect(({ store: { activityOffsets, startDragging, stopDraggin
       x = activity.x
       width = activity.width
     }
+
     return (
       // record that mouse moves over box, for linking/highlighting
       <g
         onMouseOver={onOver}
-        onMouseLeave={onLeave} >
+        onMouseLeave={onLeave}
+        onDoubleClick={setRename}
+        onClick={select} >
         <rect
           x={x}
           y={y}
-          fill={over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'white'}
-          stroke='grey'
+          stroke={selected ? '#ff9900' : 'grey' }
+          fill={ over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'white' }
           rx={10}
           width={width}
           height={30} />

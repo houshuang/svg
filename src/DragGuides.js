@@ -1,5 +1,4 @@
 import React from 'react'
-import { observer } from 'mobx-react'
 import { connect } from './store'
 
 const formatTime = (pixels) => (pixels / (3900/120)).toFixed(0) + ' min.'

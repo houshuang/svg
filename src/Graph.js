@@ -15,11 +15,12 @@ const scrollMouse = (e) => {
   }
 }
 
-export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, viewBox, scaleFactor = 1 }) =>
+export default connect(({ store: { scrollEnabled, cancelAll }, width, height, hasPanMap, viewBox, scaleFactor = 1 }) =>
   <svg
     width={width}
     height={height}
-    onWheel={scrollMouse}>
+    onWheel={scrollMouse}
+    onClick={cancelAll}>
 
     <svg viewBox={viewBox} >
       <rect
@@ -34,14 +35,14 @@ export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, vi
       <Lines scaled={!hasPanMap}/>
       { !hasPanMap && scrollEnabled && <DragLine /> }
       { !hasPanMap &&
-        <g>
-        <DragGuides />
-        <TimeScale />
-        </g>
+          <g>
+            <DragGuides />
+            <TimeScale />
+          </g>
       }
       <Activities scaled={!hasPanMap} />
     </svg>
     { !!hasPanMap &&  <PanMap />}
     { !hasPanMap && scrollEnabled && <ScrollFields width={width} height={height} /> }
-      </svg>
+  </svg>
 )

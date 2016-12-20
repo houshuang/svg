@@ -75,6 +75,20 @@ export default class Store {
     this.draggingFromActivity = activity
     this.dragCoords = [...coords]
   }
+  @action deleteSelected = () => {
+    this.connections = this.connections.filter(x => !x.selected)
+    this.activities = this.activities.filter(x => !x.selected)
+  }
+
+  @action cancelAll = () => {
+    this.renameOpen = null
+  }
+
+  @action unselect = () => {
+    this.connections.map(x => x.selected = false)
+    this.activities.map(x => x.selected = false)
+  }
+
   @action dragging = (deltax, deltay) => this.dragCoords = [this.dragCoords[0] + deltax, this.dragCoords[1] + deltay]
   @computed get dragPath() { return this.mode === 'dragging' ? drawPath(...this.draggingFrom, ...this.dragCoords) : null }
   @action swapActivities = (left, right) => {
@@ -84,7 +98,7 @@ export default class Store {
   @action stopDragging = () => {
     this.mode = ''
     const targetAry = this.activities.filter(x => x.over)
-    if(targetAry.length > 0) {
+    if(targetAry.length > 0 && (this.draggingFromActivity.id !== targetAry[0].id)) {
       this.connections.push(new Connection(this.draggingFromActivity, targetAry[0]))
     }
     this.cancelScroll()
@@ -114,6 +128,11 @@ export default class Store {
   @observable currentActivity
   @observable leftbound
   @observable rightbound
+  @observable renameOpen
+  @action rename(newTitle) {
+    this.renameOpen.title = newTitle
+    this.renameOpen = null
+  }
 
   @action startResizing = (activity) => {
     this.mode = 'resizing'

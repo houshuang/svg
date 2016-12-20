@@ -3,11 +3,19 @@ import { observer } from 'mobx-react'
 import { connect } from './store'
 
 export const Line = observer(({ connection, scaled }) =>
+  <g>
   <path
     d={scaled ? connection.pathScaled : connection.path}
     fill='transparent'
-    stroke='grey'
+    stroke={connection.selected ? '#ff9900' : 'grey'}
     strokeWidth='2' />
+  <path
+    d={scaled ? connection.pathScaled : connection.path}
+    onClick={(e) => connection.select() }
+    fill='transparent'
+    stroke='transparent'
+    strokeWidth='5' />
+  </g>
 )
 
 export const DragLine = connect(({ store: { dragPath, mode }}) => {

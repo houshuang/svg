@@ -14,16 +14,25 @@ export default class Activity {
   @observable x
   @observable width
   @observable over
+  @observable selected
   @observable overdrag
+  @action select = () => {
+    store.unselect()
+    this.selected = true
+  }
 
+  @action rename = (newname) => {
+    this.title = newname
+    store.cancelAll()
+  }
   @action move = (deltax) => {
-    if(store.mode != 'moving') { return }
+    if(store.mode !== 'moving') { return }
     if(store.overlapAllowed) {
       this.x = (between(0, 4000 - this.width, this.x + (deltax / store.scale)))
     } else {
       const oldx = this.x
       this.x = between((store.leftbound && (store.leftbound.x + store.leftbound.width)), (store.rightbound ? store.rightbound.x - this.width : 4000 - this.width), this.x + (deltax / store.scale))
-      if(oldx === this.x && (Math.abs(deltax) != 0)) {
+      if(oldx === this.x && (Math.abs(deltax) !== 0)) {
         this.overdrag += deltax
         console.log(this.overdrag)
         if(this.overdrag < -100) {
@@ -45,6 +54,7 @@ export default class Activity {
   }
   @action onOver = () => this.over = true
   @action onLeave = () => this.over = false
+  @action setRename = () => store.renameOpen = this
 
   @action init = ( plane, x, title, width, id ) => {
     this.id = id || cuid()
