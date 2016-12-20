@@ -3,35 +3,43 @@ import { DraggableCore } from 'react-draggable'
 import { connect } from './store'
 
 const Activity = connect(({ store: { activityOffsets, startDragging, stopDragging, dragging, mode,
-  draggingFromActivity, startMoving, stopMoving, startResizing, stopResizing }, activity}) => {
-  const { x, y, width, title, move, resize, onOver, onLeave, over } = activity
-  return (
-    // record that mouse moves over box, for linking/highlighting
-    <g
-      onMouseOver={onOver}
-      onMouseLeave={onLeave} >
-      <rect
-        x={x}
-        y={y}
-        fill={over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'white'}
-        stroke='grey'
-        rx={10}
-        width={width}
-        height={30} />
-      <svg style={{overflow: 'hidden'}} width={width + x - 20}>
-        <text
-          x={x + 3}
-          y={y + 20} >
-          {title}
-        </text>
-      </svg>
-      <circle
-        cx={x + width - 10}
-        cy={y + 15 }
-        r={5}
-        fill='transparent'
-        stroke='black'
-      />
+  draggingFromActivity, scale, startMoving, stopMoving, startResizing, stopResizing }, activity, scaled}) => {
+    const { y, title, move, resize, onOver, onLeave, over } = activity
+    let x, width
+    if(scaled) {
+      x = activity.x * scale
+      width = activity.width * scale
+    } else {
+      x = activity.x
+      width = activity.width
+    }
+    return (
+      // record that mouse moves over box, for linking/highlighting
+      <g
+        onMouseOver={onOver}
+        onMouseLeave={onLeave} >
+        <rect
+          x={x}
+          y={y}
+          fill={over && draggingFromActivity !== activity && mode === 'dragging' ? 'yellow' : 'white'}
+          stroke='grey'
+          rx={10}
+          width={width}
+          height={30} />
+        <svg style={{overflow: 'hidden'}} width={width + x - 20}>
+          <text
+            x={x + 3}
+            y={y + 20} >
+            {title}
+          </text>
+        </svg>
+        <circle
+          cx={x + width - 10}
+          cy={y + 15 }
+          r={5}
+          fill='transparent'
+          stroke='black'
+        />
 
     <DraggableCore
       onStart={() => startDragging(activity)}
@@ -79,8 +87,8 @@ const Activity = connect(({ store: { activityOffsets, startDragging, stopDraggin
   )
 })
 
-export default connect(({ store: { activities }} ) =>
+export default connect(({ store: { activities }, scaled} ) =>
   <g>
-    { activities.map(x => <Activity activity={x} key={x.id} />) }
+    { activities.map(x => <Activity activity={x} scaled={scaled} key={x.id} />) }
   </g>
 )

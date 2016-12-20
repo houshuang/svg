@@ -42,6 +42,7 @@ const calculateBounds = (activity, activities) => {
 
 export default class Store {
   @action init = () => {
+    this.scale = 1.5
     this.panx = 0
     this.mode = null
     this.activities = initialActivities.map(x => new Activity(...x))
@@ -56,12 +57,12 @@ export default class Store {
 
   @observable overlapAllowed
   @action updateSettings = (settings) => this.overlapAllowed = settings.overlapAllowed
-  @observable connections 
+  @observable connections
   @observable currentlyOver
-  @action addConnection = (from, to) => this.connections.push([from, to]) 
-  @observable activities 
+  @action addConnection = (from, to) => this.connections.push([from, to])
+  @observable activities
 
-  @observable mode 
+  @observable mode
   @observable draggingFromA
   @observable draggingFromActivity
   @observable dragCoords
@@ -69,20 +70,29 @@ export default class Store {
   // user begins dragging a line to make a connection
   @action startDragging = (activity) => {
     this.mode = 'dragging'
-    const coords = [activity.x + activity.width - 10, activity.y + 15]
+    const coords = [(activity.x * this.scale) + (activity.width * this.scale) - 10, activity.y + 15]
     this.draggingFrom = [...coords]
     this.draggingFromActivity = activity
     this.dragCoords = [...coords]
   }
   @action dragging = (deltax, deltay) => this.dragCoords = [this.dragCoords[0] + deltax, this.dragCoords[1] + deltay]
   @computed get dragPath() { return this.mode === 'dragging' ? drawPath(...this.draggingFrom, ...this.dragCoords) : null }
+  @action swapActivities = (left, right) => {
+    right.x = left.x
+    left.x = right.x + right.width
+  }
   @action stopDragging = () => {
     this.mode = ''
     const targetAry = this.activities.filter(x => x.over)
-    if(targetAry.length > 0) { 
+    if(targetAry.length > 0) {
       this.connections.push(new Connection(this.draggingFromActivity, targetAry[0]))
     }
     this.cancelScroll()
+  }
+  @action setScale = (x) => {
+    const oldscale = this.scale
+    this.scale = Math.min(Math.max(x, 0.3), 3)
+    this.panDelta(((this.panx / oldscale) * this.scale) - this.panx)
   }
 
   // user has dropped line somewhere, clear out
@@ -116,6 +126,7 @@ export default class Store {
     let [leftbound, rightbound] = calculateBounds(activity, this.activities)
     this.leftbound = leftbound
     this.rightbound = rightbound
+    this.currentActivity.overdrag = 0
   }
 
   @action stopMoving = () => {
@@ -136,33 +147,34 @@ export default class Store {
   @computed get activityOffsets() {
     const activities = this.activities
     return(
-      [1, 2, 3].reduce((acc, plane) => 
+      [1, 2, 3].reduce((acc, plane) =>
         ({...acc, ...getOffsets(plane, activities)}), {})
     )
   }
+  @observable scale
 
-  @observable panx 
+  @observable panx
   @action panDelta = (deltaX) => {
     const oldpan = this.panx
     this.panx = Math.min(Math.max(this.panx + (deltaX), 0), 750)
     // only add if we actually panned, and check that we can actually more or resize before panning :)
     if (oldpan !== this.panx) {
-      if(this.mode === 'dragging') { 
+      if(this.mode === 'dragging') {
         this.dragCoords[0] += (deltaX * 4)
       }
-      if(this.mode === 'resizing') { 
+      if(this.mode === 'resizing') {
         const oldwidth = this.currentActivity.width
         this.currentActivity.resize(deltaX * 4)
         if (oldwidth === this.currentActivity.width) { this.panx = oldpan }
       }
-      if(this.mode === 'moving') { 
+      if(this.mode === 'moving') {
         const oldx = this.currentActivity.x
         this.currentActivity.move(deltaX * 4)
         if (oldx === this.currentActivity.x) { this.panx = oldpan }
       }
     }
   }
-  
+
   @computed get panOffset() { return this.panx * 4 }
 }
 

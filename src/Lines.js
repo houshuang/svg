@@ -2,9 +2,9 @@ import React from 'react'
 import { observer } from 'mobx-react'
 import { connect } from './store'
 
-export const Line = observer(({ connection }) => 
-  <path 
-    d={connection.path}
+export const Line = observer(({ connection, scaled }) =>
+  <path
+    d={scaled ? connection.pathScaled : connection.path}
     fill='transparent'
     stroke='grey'
     strokeWidth='2' />
@@ -13,7 +13,7 @@ export const Line = observer(({ connection }) =>
 export const DragLine = connect(({ store: { dragPath, mode }}) => {
   if(mode !== 'dragging') { return null }
   return (
-    <path 
+    <path
       d={dragPath}
     fill='transparent'
     stroke='grey'
@@ -21,8 +21,8 @@ export const DragLine = connect(({ store: { dragPath, mode }}) => {
   )
 })
 
-export default connect(({store: { connections }} ) =>
+export default connect(({store: { connections }, scaled} ) =>
   <g>
-    { connections.map(connection => <Line key={connection.id} connection={connection} />) }
+    { connections.map(connection => <Line scaled={scaled} key={connection.id} connection={connection} />) }
   </g>
 )

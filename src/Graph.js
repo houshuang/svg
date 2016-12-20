@@ -8,36 +8,40 @@ import { connect, store } from './store'
 
 const scrollMouse = (e) => {
   e.preventDefault()
-  store.panDelta(e.deltaY)
+  if(e.shiftKey) {
+    store.setScale(store.scale + (e.deltaY * 0.01))
+  } else {
+    store.panDelta(e.deltaY)
+  }
 }
 
-export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, viewBox, scaleFactor = 1 }) => 
-  <svg 
-    width={width} 
-    height={height} 
+export default connect(({ store: { scrollEnabled }, width, height, hasPanMap, viewBox, scaleFactor = 1 }) =>
+  <svg
+    width={width}
+    height={height}
     onWheel={scrollMouse}>
 
     <svg viewBox={viewBox} >
-      <rect 
-        x={0} 
-        y={0} 
-        fill='#fcf9e9' 
-        stroke='transparent' 
-        rx={10 * scaleFactor} 
-        width={width * Math.max(4, scaleFactor)} 
-        height={height * scaleFactor} />
+      <rect
+        x={0}
+        y={0}
+        fill='#fcf9e9'
+        stroke='transparent'
+        rx={10}
+        width={width * 4}
+        height={height * 4} />
       <LevelLines />
-      <Lines />
+      <Lines scaled={!hasPanMap}/>
       { !hasPanMap && scrollEnabled && <DragLine /> }
-      { !hasPanMap && 
+      { !hasPanMap &&
         <g>
         <DragGuides />
         <TimeScale />
         </g>
       }
-      <Activities />
+      <Activities scaled={!hasPanMap} />
     </svg>
-    { !!hasPanMap &&  <PanMap scaleFactor={scaleFactor} />}
+    { !!hasPanMap &&  <PanMap />}
     { !hasPanMap && scrollEnabled && <ScrollFields width={width} height={height} /> }
       </svg>
 )

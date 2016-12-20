@@ -14,18 +14,33 @@ export default class Activity {
   @observable x
   @observable width
   @observable over
+  @observable overdrag
 
   @action move = (deltax) => {
+    if(store.mode != 'moving') { return }
     if(store.overlapAllowed) {
-      this.x = (between(0, 4000 - this.width, this.x + deltax))
+      this.x = (between(0, 4000 - this.width, this.x + (deltax / store.scale)))
     } else {
-      this.x = between((store.leftbound && (store.leftbound.x + store.leftbound.width)), (store.rightbound ? store.rightbound.x - this.width : 4000 - this.width), this.x + deltax)
+      const oldx = this.x
+      this.x = between((store.leftbound && (store.leftbound.x + store.leftbound.width)), (store.rightbound ? store.rightbound.x - this.width : 4000 - this.width), this.x + (deltax / store.scale))
+      if(oldx === this.x && (Math.abs(deltax) != 0)) {
+        this.overdrag += deltax
+        console.log(this.overdrag)
+        if(this.overdrag < -100) {
+          store.swapActivities(store.leftbound, this)
+          store.stopMoving()
+        }
+        if(this.overdrag > 100) {
+          store.swapActivities(this, store.rightbound)
+          this.overdrag = 0
+          store.stopMoving()
+        }
+      }
     }
-    this.mode = 'dragging'
   }
 
   @action resize = (deltax) => {
-    this.width = between(20, store.rightbound.x - this.x, this.width + deltax)
+    this.width = between(20, store.rightbound.x - this.x, this.width + (deltax / store.scale))
     this.mode = 'resizing'
   }
   @action onOver = () => this.over = true
@@ -38,13 +53,14 @@ export default class Activity {
     this.x = x
     this.width = width
     this.over = false
+    this.overdrag = 0
   }
 
   constructor(...args) {
     this.init(...args)
   }
 
-  @computed get y() { 
+  @computed get y() {
     const offset = store.activityOffsets[this.id]
     return (this.plane * 100) + 50 - (offset * 30)
   }
