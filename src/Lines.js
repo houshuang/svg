@@ -14,7 +14,7 @@ export const Line = observer(({ connection, scaled }) =>
     onClick={(e) => connection.select() }
     fill='transparent'
     stroke='transparent'
-    strokeWidth='5' />
+    strokeWidth='12' />
   </g>
 )
 

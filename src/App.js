@@ -1,6 +1,5 @@
 import React from 'react';
 import { Provider } from 'mobx-react'
-import DevTools from 'mobx-react-devtools';
 import Form from 'react-jsonschema-form'
 
 import { connect, store } from './store'
@@ -9,40 +8,10 @@ import Rename from './Rename'
 
 import './App.css'
 
-const settingsSchema = {
-  type: 'object',
-  properties: {
-    overlapAllowed: {
-      type: 'boolean',
-      title: 'Overlap allowed'
-    }
-  }
-}
-
-const Settings = connect(({store: { updateSettings, undo, canUndo }}) =>
-  <Form
-    schema={settingsSchema}
-    onChange={({formData}) => updateSettings(formData)}>
-    <button type='button' disabled={!canUndo} onClick={undo}>Undo</button>
-</Form>
-)
-
-const keyDown = (e) => {
-  if(e.keyCode === 27) { // esc
-    store.cancelAll()
-    store.unselect()
-  }
-  if(e.keyCode === 8) { // backspace
-    store.deleteSelected()
-  }
-}
-window.addEventListener('keydown', keyDown)
 
 const App = connect(({store: {panOffset}}) =>
   <div>
   <div className="App" >
-    <DevTools />
-    <br/>
     <div style={{
       position: 'fixed',
       top: '30px',
@@ -78,3 +47,33 @@ export default () =>
   <Provider store={store}>
     <App />
   </Provider>
+
+
+const settingsSchema = {
+  type: 'object',
+  properties: {
+    overlapAllowed: {
+      type: 'boolean',
+      title: 'Overlap allowed'
+    }
+  }
+}
+
+const Settings = connect(({store: { updateSettings, undo, canUndo }}) =>
+  <Form
+    schema={settingsSchema}
+    onChange={({formData}) => updateSettings(formData)}>
+    <button type='button' disabled={!canUndo} onClick={undo}>Undo</button>
+</Form>
+)
+
+const keyDown = (e) => {
+  if(e.keyCode === 27) { // esc
+    store.cancelAll()
+    store.unselect()
+  }
+  if(e.keyCode === 8) { // backspace
+    store.deleteSelected()
+  }
+}
+window.addEventListener('keydown', keyDown)

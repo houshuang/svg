@@ -15,7 +15,7 @@ const scrollMouse = (e) => {
   }
 }
 
-export default connect(({ store: { scrollEnabled, cancelAll }, width, height, hasPanMap, viewBox, scaleFactor = 1 }) =>
+export default connect(({ store: { scale, scrollEnabled, cancelAll }, width, height, hasPanMap, viewBox, scaleFactor = 1 }) =>
   <svg
     width={width}
     height={height}
@@ -29,7 +29,7 @@ export default connect(({ store: { scrollEnabled, cancelAll }, width, height, ha
         fill='#fcf9e9'
         stroke='transparent'
         rx={10}
-        width={width * 4}
+        width={hasPanMap ? 4000 : width * 4 * scale}
         height={height * 4} />
       <LevelLines />
       <Lines scaled={!hasPanMap}/>

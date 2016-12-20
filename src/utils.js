@@ -1,9 +1,15 @@
 import React, { Component } from 'react'
 
+export const between = (minval, maxval, x) => {
+  minval = minval || 0
+  maxval = maxval || 99999
+  return (Math.min(Math.max(x, minval), maxval))
+}
+
 export class TextInput extends Component {
   constructor(props) {
     super(props)
-    this.state = {val: ''}
+    this.state = {val: this.props.value || ''}
   }
 
   componentDidMount() {

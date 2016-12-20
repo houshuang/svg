@@ -3,6 +3,7 @@ import { initialConnections, initialActivities } from '../data'
 import { drawPath } from '../path'
 import Activity from './activity'
 import Connection from './connection'
+import { between } from '../utils'
 
 const getid = (ary, id) => {
   const res = ary.filter(x => x.id === id)
@@ -42,7 +43,7 @@ const calculateBounds = (activity, activities) => {
 
 export default class Store {
   @action init = () => {
-    this.scale = 1.5
+    this.scale = 1
     this.panx = 0
     this.mode = null
     this.activities = initialActivities.map(x => new Activity(...x))
@@ -58,7 +59,6 @@ export default class Store {
   }
 
   @action addHistory = () => {
-    console.log('historizing', this.history.length)
     this.history.push([this.connections.map(x=>({...x})), this.activities.map(x => ({...x})) ])
   }
 
@@ -94,6 +94,11 @@ export default class Store {
   @action deleteSelected = () => {
     const conn = this.connections.length
     const act = this.activities.length
+    const delActivity = this.activities.filter(x => x.selected)
+    if (delActivity.length > 0) {
+      const delAct = this.activities.filter(x => x.selected)[0]
+      this.connections = this.connections.filter(x => x.target.id !== delAct.id && x.source.id !== delAct.id)
+    }
     this.connections = this.connections.filter(x => !x.selected)
     this.activities = this.activities.filter(x => !x.selected)
     if(conn !== this.connections.length || act !== this.activities.length) { this.addHistory() }
@@ -126,8 +131,13 @@ export default class Store {
   }
   @action setScale = (x) => {
     const oldscale = this.scale
-    this.scale = Math.min(Math.max(x, 0.3), 3)
-    this.panDelta(((this.panx / oldscale) * this.scale) - this.panx)
+    this.scale = between(0.4, 3, x)
+
+    const oldPanBoxSize = 250 / oldscale
+    const newPanBoxSize = 250 / this.scale
+    const needPanDelta = (oldPanBoxSize / 2) - (newPanBoxSize / 2)
+
+    this.panDelta(needPanDelta)
   }
 
   // user has dropped line somewhere, clear out
@@ -197,27 +207,38 @@ export default class Store {
   @observable scale
 
   @observable panx
+  @action addActivity = (plane, rawX) => {
+    const x = (rawX + this.panOffset) / this.scale - 150
+    const newActivity = new Activity(plane, x, 'Unnamed', 150)
+    this.activities.push(newActivity)
+    this.renameOpen = newActivity
+  }
+
   @action panDelta = (deltaX) => {
     const oldpan = this.panx
-    this.panx = Math.min(Math.max(this.panx + (deltaX), 0), 750)
-    // only add if we actually panned, and check that we can actually more or resize before panning :)
+    const panBoxSize = 250 / this.scale
+    const rightBoundary = 1000 - panBoxSize
+
+    const newPan = this.panx + deltaX
+    this.panx = between(0, rightBoundary, newPan)
+
     if (oldpan !== this.panx) {
       if(this.mode === 'dragging') {
-        this.dragCoords[0] += (deltaX * 4)
+        this.dragCoords[0] += (deltaX * 4 * this.scale)
       }
       if(this.mode === 'resizing') {
         const oldwidth = this.currentActivity.width
-        this.currentActivity.resize(deltaX * 4)
+        this.currentActivity.resize(deltaX * 4 * this.scale)
         if (oldwidth === this.currentActivity.width) { this.panx = oldpan }
       }
       if(this.mode === 'moving') {
         const oldx = this.currentActivity.x
-        this.currentActivity.move(deltaX * 4)
+        this.currentActivity.move(deltaX * 4 * this.scale)
         if (oldx === this.currentActivity.x) { this.panx = oldpan }
       }
     }
   }
 
-  @computed get panOffset() { return this.panx * 4 }
+  @computed get panOffset() { return (this.panx * 4) * this.scale }
 }
 

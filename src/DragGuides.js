@@ -1,15 +1,16 @@
 import React from 'react'
 import { connect } from './store'
 
-const formatTime = (pixels) => (pixels / (3900/120)).toFixed(0) + ' min.'
+const formatTime = (pixels, scale) => (pixels / ((3900 * scale)/120)).toFixed(0) + ' min.'
 const DragGuide = connect(({ store: { scale }, ...rest }) => {
   const x = rest.x * scale
   const current = rest.current * scale
   const middle = ((x - current) / 2.0) + current - 5
+  console.log(scale, rest.x, x, rest.current, current, rest.x - rest.current, x - current)
   return (
     <g>
       <text x={middle} y={300}>
-        {formatTime(Math.abs(x - current) * scale )}
+        {formatTime(Math.abs(x - current) , scale)}
       </text>
       <polygon x={middle} y={300} points='492.426,246.213 406.213,160 406.213,231.213 86.213,231.213 86.213,160 0,246.213 86.213,332.427 86.213,261.213
       406.213,261.213 406.213,332.427' transform={`translate(${middle - 17} 300) scale(0.1) `} />
@@ -42,7 +43,7 @@ const DragGuide = connect(({ store: { scale }, ...rest }) => {
 })
 
 
-export default connect(({ store: {leftbound, rightbound, mode, currentActivity } })=> {
+export default connect(({ store: {leftbound, rightbound, mode, currentActivity, sclae } })=> {
   if(mode === 'resizing') {
     return (rightbound ? <DragGuide x={rightbound.x} current={currentActivity.x + currentActivity.width} /> : null )
   }

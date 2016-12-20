@@ -1,12 +1,7 @@
 import { observable, computed, action } from 'mobx'
 import { store } from './index'
 import cuid from 'cuid'
-
-const between = (minval, maxval, x) => {
-  minval = minval || 0
-  maxval = maxval || 99999
-  return (Math.min(Math.max(x, minval), maxval))
-}
+import { between } from '../utils'
 
 export default class Activity {
   @observable title
@@ -34,7 +29,6 @@ export default class Activity {
       this.x = between((store.leftbound && (store.leftbound.x + store.leftbound.width)), (store.rightbound ? store.rightbound.x - this.width : 4000 - this.width), this.x + (deltax / store.scale))
       if(oldx === this.x && (Math.abs(deltax) !== 0)) {
         this.overdrag += deltax
-        console.log(this.overdrag)
         if(this.overdrag < -100) {
           store.swapActivities(store.leftbound, this)
           store.stopMoving()
@@ -49,7 +43,8 @@ export default class Activity {
   }
 
   @action resize = (deltax) => {
-    this.width = between(20, store.rightbound.x - this.x, this.width + (deltax / store.scale))
+    const rightbound = (this.rightbound && this.rightbound.x) || 4000
+    this.width = between(20, rightbound - this.x, this.width + (deltax / store.scale))
     this.mode = 'resizing'
   }
   @action onOver = () => this.over = true
