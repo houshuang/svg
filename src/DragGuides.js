@@ -6,7 +6,6 @@ const DragGuide = connect(({ store: { scale }, ...rest }) => {
   const x = rest.x * scale
   const current = rest.current * scale
   const middle = ((x - current) / 2.0) + current - 5
-  console.log(scale, rest.x, x, rest.current, current, rest.x - rest.current, x - current)
   return (
     <g>
       <text x={middle} y={300}>

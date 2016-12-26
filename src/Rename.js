@@ -4,10 +4,11 @@ import { TextInput } from './utils'
 
 const RenameField = connect(({store: {panx, renameOpen, rename, scale, cancelAll}}) => {
   if(!renameOpen) { return null }
+  const left = 152 + ((renameOpen.x * scale) - (panx * 4) )
   return (
   <div style={{
     position: 'fixed',
-    left: `${152 + ((renameOpen.x * scale) - (panx * 4) )}px`,
+    left: `${left}px`,
     top: `${renameOpen.y + 33}px`
   }}>
   <TextInput value={renameOpen.title} onSubmit={(x) => renameOpen.rename(x)} onCancel={cancelAll} />
