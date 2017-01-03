@@ -208,7 +208,7 @@ export default class Store {
 
   @observable panx
   @action addActivity = (plane, rawX) => {
-    const x = (rawX + this.panOffset) / this.scale - 150
+    const x = ((rawX - 150) / this.scale) + (this.panx * 4)
     const newActivity = new Activity(plane, x, 'Unnamed', 150)
     this.activities.push(newActivity)
     this.renameOpen = newActivity
@@ -239,6 +239,6 @@ export default class Store {
     }
   }
 
-  @computed get panOffset() { return (this.panx * 4) * this.scale }
+  @computed get panOffset() { return (this.panx * 4 * this.scale) }
 }
 

@@ -53,7 +53,7 @@ export default class Activity {
 
   @action init = ( plane, x, title, width, id ) => {
     this.id = id || cuid()
-    this.title = title
+    this.title = title || ''
     this.plane = plane
     this.x = x
     this.width = width
