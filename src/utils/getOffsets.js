@@ -1,24 +1,25 @@
 // calculates offsets given a list of activities, and the plane in question
 export default (plane, activities) => {
-  const ary = activities.filter(act => act.plane === plane).sort((a, b) => a.x - b.x)
+  const ary = activities
+    .filter(act => act.plane === plane)
+    .sort((a, b) => a.x - b.x);
   const levels = ary.reduce(
-    ([acc, res], item) => {
-      let l = 0
-      while(true) {
-        if((acc[l] || 0) <= item.x) {
-          acc[l] = item.x + item.width
-          res[item.id] = l
-          break
+    ([ acc, res ], item) => {
+      let l = 0;
+      while (true) {
+        if ((acc[l] || 0) <= item.x) {
+          acc[l] = item.x + item.width;
+          res[item.id] = l;
+          break;
         }
-        if(l > 5) {
-          break
+        if (l > 5) {
+          break;
         }
-        l += 1
+        l += 1;
       }
-      return [acc, res]
-    }, [[], {}]
-  )
-  return levels[1]
-}
-
-
+      return [ acc, res ];
+    },
+    [ [], {} ]
+  );
+  return levels[1];
+};
