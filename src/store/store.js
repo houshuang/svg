@@ -1,35 +1,16 @@
 import { computed, action, observable } from 'mobx'
+
 import { initialConnections, initialActivities } from '../data'
+
 import { drawPath } from '../path'
 import Activity from './activity'
 import Connection from './connection'
 import { between } from '../utils'
+import getOffsets from '../utils/getOffsets'
 
 const getid = (ary, id) => {
   const res = ary.filter(x => x.id === id)
   return(res && res[0])
-}
-
-const getOffsets = (plane, activities) => {
-  const ary = activities.filter(act => act.plane === plane).sort((a, b) => a.x - b.x)
-  const levels = ary.reduce(
-    ([acc, res], item) => {
-      let l = 0
-      while(true) {
-        if((acc[l] || 0) <= item.x) {
-          acc[l] = item.x + item.width
-          res[item.id] = l
-          break
-        }
-        if(l > 5) {
-          break
-        }
-        l += 1
-      }
-      return [acc, res]
-    }, [[], {}]
-  )
-  return levels[1]
 }
 
 // find activities immediately to the left and to the right of the current activity
@@ -38,47 +19,38 @@ const calculateBounds = (activity, activities) => {
   const sorted = activities.filter(x => x.id !== activity.id).sort((a, b) => a.x - b.x)
   const leftbound = sorted.filter(act => act.x <= activity.x).pop()
   const rightbound = sorted.filter(act => act.x >= (activity.x + activity.width)).shift()
-  return([leftbound, rightbound])
+  return [leftbound, rightbound]
 }
 
 export default class Store {
-  @action init = () => {
-    this.scale = 1
-    this.panx = 0
-    this.mode = null
-    this.activities = initialActivities.map(x => new Activity(...x))
-    this.connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1])))
-    this.mode = ''
-    this.overlapAllowed = false
-    this.history = []
+  constructor() {
     this.addHistory()
   }
 
-  constructor() {
-    this.init()
-  }
+  @observable connections = initialConnections.map(x => new Connection(getid(this.activities, x[0]), getid(this.activities, x[1])))
+  @action addConnection = (from, to) => this.connections.push([from, to])
+
+  @observable activities = initialActivities.map(x => new Activity(...x))
+
+  @observable history = []
 
   @action addHistory = () => {
     this.history.push([this.connections.map(x=>({...x})), this.activities.map(x => ({...x})) ])
   }
 
+  @computed get canUndo() { return(this.history.length > 0) }
+
   @action undo = () => {
-    const [connections, activities] = this.history.pop()
+    const [connections, activities] = this.history.length > 1 ? this.history.pop() : this.history[0]
     this.activities = activities.map(x => new Activity(x.plane, x.x, x.title, x.width, x.id))
     this.connections = connections.map(x => new Connection(getid(this.activities, x.source.id), getid(this.activities, x.target.id)))
   }
 
-  @computed get canUndo() { return(this.history.length > 0) }
-  @observable history
-
-  @observable overlapAllowed
+  @observable overlapAllowed = false
   @action updateSettings = (settings) => this.overlapAllowed = settings.overlapAllowed
-  @observable connections
   @observable currentlyOver
-  @action addConnection = (from, to) => this.connections.push([from, to])
-  @observable activities
 
-  @observable mode
+  @observable mode = ''
   @observable draggingFromA
   @observable draggingFromActivity
   @observable dragCoords
@@ -204,9 +176,9 @@ export default class Store {
         ({...acc, ...getOffsets(plane, activities)}), {})
     )
   }
-  @observable scale
+  @observable scale = 1
 
-  @observable panx
+  @observable panx = 0
   @action addActivity = (plane, rawX) => {
     const x = ((rawX - 150) / this.scale) + (this.panx * 4)
     const newActivity = new Activity(plane, x, 'Unnamed', 150)

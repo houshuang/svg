@@ -1,6 +1,7 @@
 import React from 'react';
 import { Provider } from 'mobx-react'
 import Form from 'react-jsonschema-form'
+import DevTools from 'mobx-react-devtools';
 
 import { connect, store } from './store'
 import Graph from './Graph'
@@ -11,6 +12,7 @@ import './App.css'
 
 const App = connect(({store: {panOffset}}) =>
   <div>
+    <DevTools />
   <div className="App" >
     <div style={{
       position: 'fixed',
