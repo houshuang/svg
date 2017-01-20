@@ -103,4 +103,3 @@ export const drawPath = (startX, startY, endX, endY) => {
 
   return calcPath(startX, startY, endX, endY);
 };
-

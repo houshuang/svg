@@ -1,6 +1,7 @@
 import React from "react";
 import { DraggableCore } from "react-draggable";
 import { connect, store } from "./store";
+import { timeToPx } from "./utils";
 
 export const PanMap = connect(({ store: { panx, panDelta, scale } }) => (
   <DraggableCore onDrag={(_, { deltaX }) => panDelta(deltaX)}>
@@ -55,7 +56,7 @@ export const TimeScale = connect(({ store: { scale } }) => {
     let text = null;
     let length = 0;
 
-    const x = a * (3900 * scale / 120);
+    const x = timeToPx(a, scale);
     if (a % 15 === 0) {
       length = 30;
       text = <text x={x - 15} y={540}>{a + " min."}</text>;

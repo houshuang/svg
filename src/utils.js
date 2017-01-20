@@ -1,5 +1,7 @@
 import React, { Component } from "react";
 
+export const timeToPx = (time, scale) => time * 3900 * scale / 120;
+
 export const between = (minval, maxval, x) => {
   minval = minval || 0;
   maxval = maxval || 99999;

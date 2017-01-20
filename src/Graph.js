@@ -38,6 +38,7 @@ export default connect((
       />
       <LevelLines />
       <Lines scaled={!hasPanMap} />
+      <Activities scaled={!hasPanMap} />
       {!hasPanMap && scrollEnabled && <DragLine />}
       {!hasPanMap && (
             <g>
@@ -45,7 +46,6 @@ export default connect((
               <TimeScale />
             </g>
           )}
-      <Activities scaled={!hasPanMap} />
     </svg>
     {!!hasPanMap && <PanMap />}
     {
