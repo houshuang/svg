@@ -1,4 +1,3 @@
-// @flow
 import { computed, action, observable } from "mobx";
 
 import { initialConnections, initialActivities } from "../data";
@@ -19,10 +18,10 @@ const getid = (ary, id) => {
 const calculateBounds = (activity, activities) => {
   const sorted = activities
     .filter(x => x.id !== activity.id)
-    .sort((a, b) => a.x - b.x);
-  const leftbound = sorted.filter(act => act.x <= activity.x).pop();
+    .sort((a, b) => a.startTime - b.startTime);
+  const leftbound = sorted.filter(act => act.startTime <= activity.startTime).pop();
   const rightbound = sorted
-    .filter(act => act.x >= activity.x + activity.width)
+    .filter(act => act.startTime >= activity.startTime + activity.length)
     .shift();
   return [ leftbound, rightbound ];
 };
@@ -73,7 +72,7 @@ export default class Store {
   @observable currentlyOver;
 
   @observable mode = "";
-  @observable draggingFromA;
+  @observable draggingFrom;
   @observable draggingFromActivity;
   @observable dragCoords;
 
@@ -81,7 +80,7 @@ export default class Store {
   @action startDragging = activity => {
     this.mode = "dragging";
     const coords = [
-      activity.x * this.scale + activity.width * this.scale - 10,
+      activity.xScaled + activity.widthScaled - 10,
       activity.y + 15
     ];
     this.draggingFrom = [ ...coords ];
@@ -125,8 +124,8 @@ export default class Store {
       : null;
   }
   @action swapActivities = (left, right) => {
-    right.x = left.x;
-    left.x = right.x + right.width;
+    right.startTime = left.startTime;
+    left.startTime = right.startTime + right.length;
     this.addHistory();
   };
   @action stopDragging = () => {

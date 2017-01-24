@@ -1,8 +1,7 @@
 import React from "react";
 import { connect } from "./store";
-
-const formatTime = (pixels, scale) =>
-  (pixels / (3900 * scale / 120)).toFixed(0) + " min.";
+import { timeToPx } from './utils'
+import { pxToTime } from './utils'
 
 const TwoSidedArrow = ({ x }) => (
   <polygon
@@ -39,10 +38,10 @@ const ShadedBox = ({ x, current }) => (
 );
 
 const DragGuide = connect(({ store: { scale }, ...rest }) => {
-  const x = rest.x * scale;
-  const current = rest.current * scale;
+  const x = rest.x
+  const current = rest.current
   const middle = (x - current) / 2.0 + current - 5;
-  const timeText = formatTime(Math.abs(x - current), scale);
+  const timeText = pxToTime(x - current, scale) + ' min.'
 
   return (
     <g>
@@ -64,8 +63,8 @@ export default connect((
     if (mode === "resizing") {
       return rightbound
         ? <DragGuide
-          x={rightbound.x}
-          current={currentActivity.x + currentActivity.width}
+          x={rightbound.xScaled}
+          current={currentActivity.xScaled + currentActivity.widthScaled}
         />
         : null;
     }
@@ -75,26 +74,26 @@ export default connect((
       return (
         <g>
           {
-            leftbound && leftbound.x + leftbound.width < currentActivity.x
+            leftbound && leftbound.xScaled + leftbound.widthScaled < currentActivity.xScaled
               ? leftbound
                 ? <DragGuide
-                  x={leftbound.x + leftbound.width}
-                  current={currentActivity.x}
+                  x={leftbound.xScaled + leftbound.widthScaled}
+                  current={currentActivity.xScaled}
                 />
-                : <DragGuide x={0} current={currentActivity.x} />
+                : <DragGuide x={0} current={currentActivity.xScaled} />
               : null
           }
           {
             rightbound &&
-              rightbound.x > currentActivity.x + currentActivity.width
+              rightbound.xScaled > currentActivity.xScaled + currentActivity.widthScaled
               ? rightbound
                 ? <DragGuide
-                  x={rightbound.x}
-                  current={currentActivity.x + currentActivity.width}
+                  x={rightbound.xScaled}
+                  current={currentActivity.xScaled + currentActivity.widthScaled}
                 />
                 : <DragGuide
                   x={4000}
-                  current={currentActivity.x + currentActivity.width}
+                  current={currentActivity.xScaled + currentActivity.widthScaled}
                 />
               : null
           }

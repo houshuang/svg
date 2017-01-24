@@ -31,9 +31,9 @@ export default class Connection {
     );
   }
   @computed get pathScaled() {
-    const x = this.source.x * store.scale;
-    const width = this.source.width * store.scale;
-    const x2 = this.target.x * store.scale;
+    const x = this.source.xScaled
+    const width = this.source.widthScaled
+    const x2 = this.target.xScaled
     return drawPath(x + width, this.source.y + 15, x2, this.target.y + 15);
   }
 }

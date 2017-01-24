@@ -1,24 +1,21 @@
-// @flow
-
 import { observable, computed, action } from "mobx";
 import { store } from "./index";
 import cuid from "cuid";
-import { between } from "../utils";
+import { timeToPx, pxToTime, between } from "../utils";
 
 export default class Activity {
-  @action init = (plane: number, x: number, title: string, width: number, id: string) => {
+  @action init = (plane: number, startTime: number, title: string, length: number, id: string) => {
     this.id = id || cuid();
-    this.over = false;
-    // whether mouse is highlighting this activity
+    this.over = false; // is mouse over this activity
     this.overdrag = 0;
     this.plane = plane;
     this.title = title || "";
-    this.width = width;
-    this.x = x;
+    this.length = length;
+    this.startTime = startTime;
   };
 
-  constructor(plane: number, x: number, title: string, width: number, id: string) {
-    this.init(plane, x, title, width, id);
+  constructor(plane: number, startTime: number, title: string, length: number, id: string) {
+    this.init(plane, startTime, title, length, id);
   }
 
   plane: number;
@@ -27,11 +24,23 @@ export default class Activity {
   @observable overdrag: number;
   @observable selected: boolean;
   @observable title: string;
-  @observable width: number;
-  @observable x: number;
+  @observable length: number;
+  @observable startTime: number;
 
-  @action
-  select = () => {
+  @computed get xScaled(): number {
+    return timeToPx(Math.round(this.startTime), store.scale)
+  }
+  @computed get x(): number {
+    return timeToPx(Math.round(this.startTime), 1)
+  }
+  @computed get widthScaled(): number {
+    return timeToPx(Math.round(this.length), store.scale)
+  }
+  @computed get width(): number {
+    return timeToPx(Math.round(this.length), 1)
+  }
+
+  @action select = () => {
     store.unselect();
     this.selected = true;
   };
@@ -45,22 +54,23 @@ export default class Activity {
     if (store.mode !== "moving") {
       return;
     }
+    const deltaTime = pxToTime(deltax, store.scale)
     if (store.overlapAllowed) {
-      this.x = between(0, 4000 - this.width, this.x + deltax / store.scale);
+      this.startTime = between(0, 120 - this.length, this.startTime + deltaTime);
     } else {
-      const oldx = this.x;
-      this.x = between(
-        store.leftbound && store.leftbound.x + store.leftbound.width,
-        store.rightbound ? store.rightbound.x - this.width : 4000 - this.width,
-        this.x + deltax / store.scale
+      const oldTime = this.startTime;
+      this.startTime = between(
+        store.leftbound && store.leftbound.startTime + store.leftbound.length,
+        store.rightbound ? store.rightbound.startTime - this.length : 120 - this.length,
+        this.startTime + deltaTime
       );
-      if (oldx === this.x && Math.abs(deltax) !== 0) {
-        this.overdrag += deltax;
-        if (this.overdrag < -100) {
+      if (oldTime === this.startTime && Math.abs(deltaTime) !== 0) {
+        this.overdrag += deltaTime;
+        if (this.overdrag < -3) {
           store.swapActivities(store.leftbound, this);
           store.stopMoving();
         }
-        if (this.overdrag > 100) {
+        if (this.overdrag > 3) {
           store.swapActivities(this, store.rightbound);
           this.overdrag = 0;
           store.stopMoving();
@@ -70,11 +80,12 @@ export default class Activity {
   };
 
   @action resize = (deltax: number) => {
-    const rightbound = (store.rightbound && store.rightbound.x) || 4000;
-    this.width = between(
-      20,
-      rightbound - this.x,
-      this.width + deltax / store.scale
+    const deltaTime = pxToTime(deltax, store.scale)
+    const rightbound = (store.rightbound && store.rightbound.startTime) || 120;
+    this.length = between(
+      1,
+      rightbound - this.startTime,
+      this.length + deltaTime
     );
     store.mode = "resizing";
   };
