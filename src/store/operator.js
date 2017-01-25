@@ -34,6 +34,11 @@ export default class Operator {
     return [this.x, this.y]
   }
 
+  @action onClick = () => {
+    store.unselect();
+    this.selected = true;
+  };
+
   @action onOver = () => this.over = true;
   @action onLeave = () => this.over = false;
   @computed get highlighted(): boolean {

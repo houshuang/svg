@@ -51,7 +51,8 @@ export default ({ x, y, onOver, onLeave, onClick, selected, highlighted, startDr
       onStop={onStop}
     >
       <circle cx={300} cy={300} r={350} style={{fill: 'transparent', stroke: 'transparent'}} transform='translate(30,30)' 
-        onMouseOver={onOver} onMouseLeave={onLeave} onClick={onClick}
+        onMouseOver={onOver} onMouseLeave={onLeave} 
+        onClick={onClick}
       />
     </DraggableCore> 
   </g>

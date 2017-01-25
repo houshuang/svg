@@ -57,7 +57,6 @@ export default class Store {
     const [ connections, activities, operators ] = this.history.length > 1
       ? this.history.pop()
       : this.history[0];
-    console.log(connections, activities, operators)
     this.activities = activities.map(
       x => new Activity(x.plane, x.startTime, x.title, x.length, x.id)
     );
@@ -99,19 +98,30 @@ export default class Store {
     this.draggingFromActivity = activity;
     this.dragCoords = [ ...coords ];
   };
+
   @action deleteSelected = () => {
     const conn = this.connections.length;
     const act = this.activities.length;
+    const opt = this.operators.length;
     const delActivity = this.activities.filter(x => x.selected);
     if (delActivity.length > 0) {
       const delAct = this.activities.filter(x => x.selected)[0];
       this.connections = this.connections.filter(
         x => x.target.id !== delAct.id && x.source.id !== delAct.id
       );
+    } else { 
+      const delOperator = this.operators.filter(x => x.selected);
+      if (delOperator.length > 0) {
+        const delOpt = this.operators.filter(x => x.selected)[0];
+        this.connections = this.connections.filter(
+          x => x.target.id !== delOpt.id && x.source.id !== delOpt.id
+        );
+      }
     }
     this.connections = this.connections.filter(x => !x.selected);
     this.activities = this.activities.filter(x => !x.selected);
-    if (conn !== this.connections.length || act !== this.activities.length) {
+    this.operators = this.operators.filter(x => !x.selected);
+    if (conn !== this.connections.length || act !== this.activities.length || opt !== this.operators.length) {
       this.addHistory();
     }
   };
@@ -133,6 +143,7 @@ export default class Store {
   @action unselect = () => {
     this.connections.map(x => x.selected = false);
     this.activities.map(x => x.selected = false);
+    this.operators.map(x => x.selected = false);
   };
 
   @action dragging = (deltax: number, deltay: number): void =>
