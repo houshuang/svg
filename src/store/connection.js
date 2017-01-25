@@ -24,7 +24,7 @@ export default class Connection {
 
   @computed get path() {
     return drawPath(
-      this.source.x + this.source.width,
+      this.source.x + (this.source.width || 0),
       this.source.y,
       this.target.x,
       this.target.y
@@ -32,7 +32,7 @@ export default class Connection {
   }
   @computed get pathScaled() {
     const x = this.source.xScaled
-    const width = this.source.widthScaled
+    const width = this.source.widthScaled || 0
     const x2 = this.target.xScaled
     return drawPath(x + width, this.source.y + 15, x2, this.target.y + 15);
   }

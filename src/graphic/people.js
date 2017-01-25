@@ -1,6 +1,10 @@
 import React from 'react'
+import { DraggableCore } from "react-draggable";
 
-export default ({ x, y, onHover, onClick, onDrag, selected }) => (
+export default ({ x, y, onOver, onLeave, onClick, selected, highlighted, startDragging, onDrag, onStop }) => {
+    const stroke=selected ? "#ff9900" : "grey"
+    const fill=highlighted ? "yellow" : "white"
+  return (
   <svg
     version="1.1"
     id="Capa_1"
@@ -15,8 +19,7 @@ export default ({ x, y, onHover, onClick, onDrag, selected }) => (
   >
     <g>
 
-      <circle cx={300} cy={300} r={300} style={{fill: 'white', stroke: 'black', strokeWidth: 60}} transform='translate(30,30)' />
-      <circle cx={300} cy={300} r={350} style={{fill: 'transparent', stroke: 'transparent'}} transform='translate(30,30)' />
+      <circle cx={300} cy={300} r={300} style={{fill: fill, stroke: stroke, strokeWidth: 60}} transform='translate(30,30)' />
       <path transform='translate(100,90),scale(0.9)'
         d="M147.128,91.076c0-37.95,30.766-68.716,68.721-68.716c37.95,0,68.719,30.766,68.719,68.716s-30.769,68.715-68.719,68.715
 		C177.894,159.792,147.128,129.026,147.128,91.076z M248.873,206.607c0.689-14.963,5.84-28.812,14.127-40.261
@@ -41,7 +44,17 @@ export default ({ x, y, onHover, onClick, onDrag, selected }) => (
 		C95.991,384.371,125.054,347.523,164.795,335.714z"
       />
     
+
+    <DraggableCore
+      onStart={startDragging}
+      onDrag={onDrag}
+      onStop={onStop}
+    >
+      <circle cx={300} cy={300} r={350} style={{fill: 'transparent', stroke: 'transparent'}} transform='translate(30,30)' 
+        onMouseOver={onOver} onMouseLeave={onLeave} onClick={onClick}
+      />
+    </DraggableCore> 
   </g>
   </svg>
-);
+)};
 

@@ -9,8 +9,8 @@ import { between, pxToTime, timeToPx } from "../utils";
 import getOffsets from "../utils/getOffsets";
 import Operator from './operator'
 
-const getid = (ary, id) => {
-  const res = ary.filter(x => x.id === id);
+const getid = ([activities, operators], id) => {
+  const res = activities.concat(operators).filter(x => x.id === id);
   return res && res[0];
 };
 
@@ -44,7 +44,8 @@ export default class Store {
   @action addHistory = () => {
     this.history.push([
       this.connections.map(x => ({ ...x })),
-      this.activities.map(x => ({ ...x }))
+      this.activities.map(x => ({ ...x })),
+      this.operators.map(x => ({ ...x }))
     ]);
   };
 
@@ -53,17 +54,21 @@ export default class Store {
   }
 
   @action undo = () => {
-    const [ connections, activities ] = this.history.length > 1
+    const [ connections, activities, operators ] = this.history.length > 1
       ? this.history.pop()
       : this.history[0];
+    console.log(connections, activities, operators)
     this.activities = activities.map(
-      x => new Activity(x.plane, x.x, x.title, x.width, x.id)
+      x => new Activity(x.plane, x.startTime, x.title, x.length, x.id)
+    );
+    this.operators = operators.map(
+      x => new Operator(x.time, x.y, x.id)
     );
     this.connections = connections.map(
       x =>
         new Connection(
-          getid(this.activities, x.source.id),
-          getid(this.activities, x.target.id)
+          getid([this.activities, this.operators], x.source.id),
+          getid([this.activities, this.operators], x.target.id)
         )
     );
   };
@@ -81,10 +86,15 @@ export default class Store {
   // user begins dragging a line to make a connection
   @action startDragging = activity => {
     this.mode = "dragging";
-    const coords = [
-      activity.xScaled + activity.widthScaled - 10,
-      activity.y + 15
-    ];
+    let coords
+    if(activity instanceof Activity) {
+      coords = [
+        activity.xScaled + activity.widthScaled - 10,
+        activity.y + 15
+      ]
+    } else { // operator
+      coords = [activity.xScaled, activity.y] 
+    }
     this.draggingFrom = [ ...coords ];
     this.draggingFromActivity = activity;
     this.dragCoords = [ ...coords ];
@@ -142,7 +152,7 @@ export default class Store {
   };
   @action stopDragging = () => {
     this.mode = "";
-    const targetAry = this.activities.filter(x => x.over);
+    const targetAry = this.activities.filter(x => x.over).concat(this.operators.filter(x => x.over))
     if (
       targetAry.length > 0 && this.draggingFromActivity.id !== targetAry[0].id
     ) {
@@ -150,7 +160,7 @@ export default class Store {
         this.draggingFromActivity,
         targetAry[0]
       ));
-      this.addHistory();
+      this.addHistory()
     }
     this.cancelScroll();
   };

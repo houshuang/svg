@@ -2,29 +2,64 @@ import cuid from "cuid";
 import { drawPath } from "../path";
 import { observable, action, computed } from "mobx";
 import { store } from "./index";
-import { timeToPx } from '../utils'
+import { pxToTime, timeToPx } from '../utils'
 
 export default class Operator {
-  @observable x
   @observable y
-  @action init(x, y) {
-    this.x = x
+  @observable over
+  @observable time
+  @action init(time, y, id) {
+    this.time = time 
     this.y = y
-    this.id = cuid()
+    this.id = id || cuid()
   }
 
   constructor(...args) {
     this.init(...args);
   }
 
+  @computed get x() {
+    return timeToPx(this.time, 1)
+  }
+
+  @computed get xScaled() {
+    return timeToPx(this.time, store.scale)
+  }
+
   @computed get coordsScaled() {
-    const rawX = timeToPx(this.x, store.scale)
-    return [rawX, this.y]
+    return [this.xScaled, this.y]
   }
 
   @computed get coords() {
-    const rawX = timeToPx(this.x, 1)
-    return [rawX, this.y]
+    return [this.x, this.y]
   }
 
+  @action onOver = () => this.over = true;
+  @action onLeave = () => this.over = false;
+  @computed get highlighted(): boolean {
+    return this.over &&
+      store.draggingFromActivity !== this &&
+      store.mode === "dragging";
+  }
+
+  @action startDragging = (e) => {
+    if(!e.shiftKey) { 
+      store.startDragging(this)
+    }
+  }
+
+  @action onDrag = (e, { deltaX, deltaY }) => {
+    if(!e.shiftKey) { 
+      store.dragging(deltaX, deltaY)
+    } else {
+      this.time += pxToTime(deltaX, store.scale)
+      this.y += deltaY
+    }
+  }
+
+  @action stopDragging = (e) => {
+    if(!e.shiftKey) {
+      store.stopDragging()
+    }
+  }
 }
