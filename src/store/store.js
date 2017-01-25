@@ -38,7 +38,7 @@ export default class Store {
   @action addConnection = (from, to) => this.connections.push([ from, to ]);
 
   @observable activities = initialActivities.map(x => new Activity(...x));
-
+  @observable operatorType
   @observable history = [];
 
   @action addHistory = () => {
@@ -61,7 +61,7 @@ export default class Store {
       x => new Activity(x.plane, x.startTime, x.title, x.length, x.id)
     );
     this.operators = operators.map(
-      x => new Operator(x.time, x.y, x.id)
+      x => new Operator(x.time, x.y, x.type, x.id)
     );
     this.connections = connections.map(
       x =>
@@ -132,9 +132,9 @@ export default class Store {
   };
 
   @action canvasClick = (e) => {
-    if(this.mode === 'placingSocial') {
+    if(this.mode === 'placingOperator') {
       const coords = this.rawMouseToTime(e.clientX, e.clientY)
-      this.operators.push(new Operator(...coords))
+      this.operators.push(new Operator(coords[0], coords[1], this.operatorType))
       this.mode = ''
     }
     this.renameOpen = null;
@@ -268,8 +268,9 @@ export default class Store {
   }
 
   @observable socialCoordsTime = []
-  @action placeSocial = () => {
-    this.mode = 'placingSocial'
+  @action placeOperator = (type) => {
+    this.mode = 'placingOperator'
+    this.operatorType = type
   }
   rawMouseToTime = (rawX, rawY) => {
     const x = pxToTime(rawX - 150, this.scale) + this.panTime

@@ -3,7 +3,7 @@ import Social from './graphic/people'
 import { connect } from './store'
 
 // export default ({ x, y, onOver, onLeave, onClick, selected, highlighted }) => {
-export default connect(({ store: { mode, operators, socialCoords, socialCoordsScaled }, scaled }) => {
+export default connect(({ store: { mode, operators, socialCoords, socialCoordsScaled, operatorType }, scaled }) => {
   let ops, dragOp
   ops = operators.map(op => {
     const coords = scaled ? op.coordsScaled : op.coords
@@ -19,12 +19,13 @@ export default connect(({ store: { mode, operators, socialCoords, socialCoordsSc
       startDragging={op.startDragging}
       onDrag={op.onDrag}
       onStop={op.stopDragging}
+      type={op.type}
     /> 
   )
   })
-  if(mode === 'placingSocial') {
+  if(mode === 'placingOperator') {
     const coords = scaled ? socialCoordsScaled : socialCoords
-    dragOp = <Social x={coords[0]} y={coords[1]} />
+    dragOp = <Social type={operatorType} x={coords[0]} y={coords[1]} />
   } else {
     dragOp = null
   }

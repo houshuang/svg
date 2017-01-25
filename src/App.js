@@ -70,7 +70,11 @@ const keyDown = e => {
   }
   if (e.keyCode === 83) {
     // s - social operator
-    store.placeSocial()
+    store.placeOperator('social')
+  }
+  if (e.keyCode === 80) {
+    // p - product operator
+    store.placeOperator('product')
   }
 };
 

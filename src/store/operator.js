@@ -8,10 +8,11 @@ export default class Operator {
   @observable y
   @observable over
   @observable time
-  @action init(time, y, id) {
+  @action init(time, y, type, id) {
     this.time = time 
     this.y = y
     this.id = id || cuid()
+    this.type = type
   }
 
   constructor(...args) {
