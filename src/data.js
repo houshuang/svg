@@ -5,3 +5,6 @@ export const initialActivities = [
 ];
 
 export const initialConnections = [];
+
+export const initialOperators = []
+

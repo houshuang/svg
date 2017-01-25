@@ -5,8 +5,9 @@ import { initialConnections, initialActivities } from "../data";
 import { drawPath } from "../path";
 import Activity from "./activity";
 import Connection from "./connection";
-import { between } from "../utils";
+import { between, pxToTime, timeToPx } from "../utils";
 import getOffsets from "../utils/getOffsets";
+import Operator from './operator'
 
 const getid = (ary, id) => {
   const res = ary.filter(x => x.id === id);
@@ -75,6 +76,7 @@ export default class Store {
   @observable draggingFrom;
   @observable draggingFromActivity;
   @observable dragCoords;
+  @observable operators = []
 
   // user begins dragging a line to make a connection
   @action startDragging = activity => {
@@ -105,6 +107,16 @@ export default class Store {
   };
 
   @action cancelAll = () => {
+    this.renameOpen = null;
+    this.mode = ''
+  };
+
+  @action canvasClick = (e) => {
+    if(this.mode === 'placingSocial') {
+      const coords = this.rawMouseToTime(e.clientX, e.clientY)
+      this.operators.push(new Operator(...coords))
+      this.mode = ''
+    }
     this.renameOpen = null;
   };
 
@@ -221,12 +233,44 @@ export default class Store {
 
   @observable panx = 0;
   @action addActivity = (plane, rawX) => {
-    const x = (rawX - 150) / this.scale + this.panx * 4;
-    const newActivity = new Activity(plane, x, "Unnamed", 150);
+    const x = pxToTime(rawX - 150, this.scale) + this.panTime
+    const newActivity = new Activity(plane, x, "Unnamed", 5);
     this.activities.push(newActivity);
     this.renameOpen = newActivity;
   };
 
+  @computed get panTime() {
+    return this.panx / 8.12  
+  }
+  @computed get rightEdgeTime() {
+    return this.panTime + (31 / this.scale)
+  }
+
+  @observable socialCoordsTime = []
+  @action placeSocial = () => {
+    this.mode = 'placingSocial'
+  }
+  rawMouseToTime = (rawX, rawY) => {
+    const x = pxToTime(rawX - 150, this.scale) + this.panTime
+    const y = rawY - 30
+    return [x, y]
+  }
+
+  @action socialMove = (rawX, rawY) => {
+    this.socialCoordsTime = this.rawMouseToTime(rawX, rawY)
+  }
+
+  @computed get socialCoords() {
+    const [rawX, y] = this.socialCoordsTime
+    const x = timeToPx(rawX, 1)
+    return [x, y]
+  }
+  @computed get socialCoordsScaled() {
+    const [rawX, y] = this.socialCoordsTime
+    const x = timeToPx(rawX, this.scale)
+    return [x, y]
+  }
+  
   @action panDelta = deltaX => {
     const oldpan = this.panx;
     const panBoxSize = 250 / this.scale;

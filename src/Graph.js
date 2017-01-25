@@ -5,6 +5,7 @@ import { LevelLines, PanMap, TimeScale } from "./fixed_components";
 import ScrollFields from "./ScrollFields";
 import DragGuides from "./DragGuides";
 import { connect, store } from "./store";
+import Operators from './Operators'
 
 const scrollMouse = e => {
   e.preventDefault();
@@ -15,9 +16,14 @@ const scrollMouse = e => {
   }
 };
 
+
+const mousemove = e => {
+  store.socialMove(e.clientX, e.clientY) 
+}
+
 export default connect((
   {
-    store: { scale, scrollEnabled, cancelAll },
+    store: { mode, scale, scrollEnabled, canvasClick, socialCoords },
     width,
     height,
     hasPanMap,
@@ -25,7 +31,7 @@ export default connect((
     scaleFactor = 1
   }
 ) => (
-  <svg width={width} height={height} onWheel={scrollMouse} onClick={cancelAll}>
+  <svg width={width} height={height} onMouseMove={mousemove} onWheel={scrollMouse} onClick={canvasClick}>
     <svg viewBox={viewBox}>
       <rect
         x={0}
@@ -46,6 +52,7 @@ export default connect((
               <TimeScale />
             </g>
           )}
+      <Operators scaled={!hasPanMap} />
     </svg>
     {!!hasPanMap && <PanMap />}
     {

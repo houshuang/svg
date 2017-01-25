@@ -1,7 +1,6 @@
 import React from "react";
 import { connect } from "./store";
-import { timeToPx } from './utils'
-import { pxToTime } from './utils'
+import { between, timeToPx, pxToTime } from './utils'
 
 const TwoSidedArrow = ({ x }) => (
   <polygon
@@ -37,11 +36,11 @@ const ShadedBox = ({ x, current }) => (
   />
 );
 
-const DragGuide = connect(({ store: { scale }, ...rest }) => {
-  const x = rest.x
-  const current = rest.current
+const DragGuide = connect(({ store: { scale, panTime, rightEdgeTime }, ...rest }) => {
+  const x = between(panTime, rightEdgeTime, rest.x)
+  const current = between(panTime, rightEdgeTime, rest.current)
   const middle = (x - current) / 2.0 + current - 5;
-  const timeText = pxToTime(x - current, scale) + ' min.'
+  const timeText = Math.abs(Math.round(pxToTime(rest.x - rest.current, scale))) + ' min.'
 
   return (
     <g>
@@ -77,23 +76,23 @@ export default connect((
             leftbound && leftbound.xScaled + leftbound.widthScaled < currentActivity.xScaled
               ? leftbound
                 ? <DragGuide
-                  x={leftbound.xScaled + leftbound.widthScaled}
-                  current={currentActivity.xScaled}
+                  x={leftbound.startTime + leftbound.length}
+                  current={currentActivity.startTime}
                 />
-                : <DragGuide x={0} current={currentActivity.xScaled} />
+                : <DragGuide x={0} current={currentActivity.startTime} />
               : null
           }
           {
             rightbound &&
-              rightbound.xScaled > currentActivity.xScaled + currentActivity.widthScaled
+              rightbound.startTime > currentActivity.startTime + currentActivity.length
               ? rightbound
                 ? <DragGuide
-                  x={rightbound.xScaled}
-                  current={currentActivity.xScaled + currentActivity.widthScaled}
+                  x={rightbound.startTime}
+                  current={currentActivity.startTime + currentActivity.length}
                 />
                 : <DragGuide
                   x={4000}
-                  current={currentActivity.xScaled + currentActivity.widthScaled}
+                  current={currentActivity.startTime + currentActivity.length}
                 />
               : null
           }

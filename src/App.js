@@ -68,6 +68,10 @@ const keyDown = e => {
     // backspace
     store.deleteSelected();
   }
+  if (e.keyCode === 83) {
+    // s - social operator
+    store.placeSocial()
+  }
 };
 
 window.addEventListener("keydown", keyDown);
