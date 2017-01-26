@@ -57,49 +57,49 @@ const calcPath = (startX, startY, endX, endY) => {
 };
 
 export const drawPath = (startX, startY, endX, endY) => {
-  if (endX - startX > 30) {
-    let newstartX;
-    let newstartY;
-    if (startY < endY) {
-      newstartX = startX - 5;
-      newstartY = startY + 13;
-    } else if (startY >= endY) {
-      newstartX = startX - 5;
-      newstartY = startY - 13;
-    } else {
-      newstartX = startX;
-      newstartY = startY;
-    }
+  // if (endX - startX > 30) {
+  //   let newstartX;
+  //   let newstartY;
+  //   if (startY < endY) {
+  //     newstartX = startX - 5;
+  //     newstartY = startY + 13;
+  //   } else if (startY >= endY) {
+  //     newstartX = startX - 5;
+  //     newstartY = startY - 13;
+  //   } else {
+  //     newstartX = startX;
+  //     newstartY = startY;
+  //   }
 
-    if (startY - endY >= 50) {
-      return [
-        calcPath(newstartX, newstartY, newstartX + 15, newstartY - 20),
-        calcPath(newstartX + 13, newstartY - 20, endX - 18, endY + 33),
-        calcPath(endX - 20, endY + 33, endX + 5, endY + 13)
-      ].join(" ");
-    }
-    if (Math.abs(startY - endY) < 50) {
-      return [
-        calcPath(newstartX, newstartY, newstartX + 15, newstartY - 20),
-        calcPath(newstartX + 13, newstartY - 20, endX - 25, newstartY - 20),
-        calcPath(endX - 27, newstartY - 20, endX + 5, endY - 13)
-      ].join(" ");
-    }
-    if (endY - startY >= 50) {
-      return [
-        calcPath(newstartX, newstartY, newstartX + 15, newstartY + 20),
-        calcPath(newstartX + 13, newstartY + 20, endX - 18, endY - 33),
-        calcPath(endX - 20, endY - 33, endX + 5, endY - 13)
-      ].join(" ");
-    }
-  }
+  //   if (startY - endY >= 50) {
+  //     return [
+  //       calcPath(newstartX, newstartY, newstartX + 15, newstartY - 20),
+  //       calcPath(newstartX + 13, newstartY - 20, endX - 18, endY + 33),
+  //       calcPath(endX - 20, endY + 33, endX + 5, endY + 13)
+  //     ].join(" ");
+  //   }
+  //   if (Math.abs(startY - endY) < 50) {
+  //     return [
+  //       calcPath(newstartX, newstartY, newstartX + 15, newstartY - 20),
+  //       calcPath(newstartX + 13, newstartY - 20, endX - 25, newstartY - 20),
+  //       calcPath(endX - 27, newstartY - 20, endX + 5, endY - 13)
+  //     ].join(" ");
+  //   }
+  //   if (endY - startY >= 50) {
+  //     return [
+  //       calcPath(newstartX, newstartY, newstartX + 15, newstartY + 20),
+  //       calcPath(newstartX + 13, newstartY + 20, endX - 18, endY - 33),
+  //       calcPath(endX - 20, endY - 33, endX + 5, endY - 13)
+  //     ].join(" ");
+  //   }
+  // }
 
-  // bubble for boxes that are too close
-  if (endX - startX < 30 && endY === startY) {
-    const middle = (endX - startX) / 2 + startX;
-    return `M${startX}, ${startY} C${middle -
-      50}, ${startY - 50} ${middle + 50}, ${startY - 50} ${endX}, ${endY}`;
-  }
+  // // bubble for boxes that are too close
+  // if (endX - startX < 30 && endY === startY) {
+  //   const middle = (endX - startX) / 2 + startX;
+  //   return `M${startX}, ${startY} C${middle -
+  //     50}, ${startY - 50} ${middle + 50}, ${startY - 50} ${endX}, ${endY}`;
+  // }
 
   return calcPath(startX, startY, endX, endY);
 };
